@@ -12,20 +12,25 @@ with real resources in it.
 Pick one region and never deviate: `eu-west-2` throughout this repo. Multi-region drift
 adds nothing to the research and doubles the cleanup surface.
 
-## 3. Budget alarms before anything is deployed
+## 3. Budget alarms
 
-Billing → Budgets → Create budget → Cost budget:
+Both alarms are defined in Terraform (`terraform/bootstrap/budgets.tf`) and created by the
+first `apply`, so there is nothing to click:
 
-- Threshold 1: **USD 5**, alert at 100% actual.
-- Threshold 2: **USD 15**, alert at 100% actual and 100% forecast.
+- **USD 5** — alert at 100% actual.
+- **USD 15** — alert at 100% actual and 100% forecast.
 
-Send both to the email you actually read. Do this **before** `terraform apply`.
+Set `budget_alert_email` in `terraform/bootstrap/terraform.tfvars` to an address you read.
+Budgets is a global service, so these are created in `us-east-1` via an aliased provider even
+though everything else lives in `eu-west-2`.
 
 ## 4. Local credentials
 
-Create an IAM user for local development with programmatic access only, and attach a policy
-scoped to the services this project uses: S3, EC2 security groups, IAM (read + the baseline
-role/policy), CloudTrail, DynamoDB (lock table), STS.
+Create an IAM user for local development with programmatic access only and attach the policy
+in `docs/iam/local_dev_policy.json`. It is scoped to exactly the services this project needs -
+S3, EC2 security groups, IAM, CloudTrail, DynamoDB, Budgets, STS - and carries an explicit
+`Deny` on the expensive ones (`ec2:RunInstances`, RDS, EKS, ElastiCache, SageMaker, Redshift)
+so a mistake cannot become a bill.
 
 ```bash
 aws configure --profile terraguard
@@ -35,29 +40,26 @@ aws sts get-caller-identity
 
 Never place these keys in the repository, in a workflow, or in a `.tfvars` file.
 
-## 5. GitHub OIDC role (needed in Phase 9, not now)
+## 5. GitHub OIDC role
 
-Create an IAM OIDC identity provider for `token.actions.githubusercontent.com`, then a role
-whose trust policy restricts `sub` to this repository and, ideally, one branch:
+Also defined in Terraform (`terraform/bootstrap/github_oidc.tf`) and gated behind a variable.
+Set `github_repository = "owner/repo"` in `terraform.tfvars` and re-apply; leave it empty and
+the provider and role are simply not created.
 
-```json
-{
-  "Condition": {
-    "StringEquals": {
-      "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-    },
-    "StringLike": {
-      "token.actions.githubusercontent.com:sub": "repo:YOUR_ORG/terraguard-ai:ref:refs/heads/main"
-    }
-  }
-}
-```
+The trust policy restricts `sub` to one repository and the `main` branch, and the attached
+policy is read-only plus state locking - the pipeline runs `plan -refresh-only`, never `apply`.
+This satisfies TG-P09, which the `insecure_workflow` fixture deliberately violates.
 
-Grant it read-only permissions. The CI workflow only ever needs to *refresh* state, never to
-apply. This satisfies TG-P09 (short-lived credentials) which the insecure workflow fixture
-deliberately violates.
+The role ARN comes out as the `github_ci_role_arn` output; paste it into the workflow's
+`configure-aws-credentials` step.
 
-## 6. Cost discipline
+## 6. Automated setup
+
+Once the profile exists, `scripts/aws_bootstrap.ps1` runs the whole sequence: bootstrap apply,
+backend block generation, baseline apply, a zero-drift confirmation via
+`plan -refresh-only -detailed-exitcode`, and the first evidence bundle.
+
+## 7. Cost discipline
 
 - No EC2 instances. The baseline deploys a security group, not a server.
 - CloudTrail: one trail, single region, log file validation on.

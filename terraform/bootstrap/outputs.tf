@@ -22,3 +22,13 @@ output "backend_block" {
     }
   EOT
 }
+
+output "github_ci_role_arn" {
+  description = "Role ARN for the configure-aws-credentials action. Empty until github_repository is set."
+  value       = try(aws_iam_role.github_ci[0].arn, "")
+}
+
+output "budget_alerts" {
+  description = "Confirmation that both cost guardrails exist."
+  value       = "${aws_budgets_budget.early_warning.name}, ${aws_budgets_budget.hard_stop.name}"
+}

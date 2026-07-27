@@ -14,3 +14,17 @@ variable "lock_table_name" {
   type        = string
   default     = "terraguard-tf-locks"
 }
+
+variable "budget_alert_email" {
+  description = "Where AWS Budgets sends the $5 and $15 alerts."
+  type        = string
+}
+
+variable "github_repository" {
+  description = <<-EOT
+    owner/repo for the GitHub Actions OIDC trust policy, e.g. "dhruvi/terraguard-ai".
+    Leave empty to skip creating the OIDC provider and CI role until Phase 9.
+  EOT
+  type        = string
+  default     = ""
+}
