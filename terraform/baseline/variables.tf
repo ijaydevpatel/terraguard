@@ -1,6 +1,6 @@
 variable "aws_region" {
   type    = string
-  default = "eu-west-2"
+  default = "ap-southeast-2"
 }
 
 variable "name_prefix" {

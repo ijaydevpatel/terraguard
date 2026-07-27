@@ -22,7 +22,7 @@ Push-Location terraform\bootstrap
 terraform init -input=false
 terraform apply -input=false -auto-approve
 $bucket = (terraform output -raw state_bucket)
-$region = (terraform output -raw -json 2>$null; "eu-west-2")
+$region = (terraform output -raw -json 2>$null; "ap-southeast-2")
 Write-Host "State bucket: $bucket" -ForegroundColor Green
 terraform output -raw backend_block | Set-Content -Path "..\..\generated_backend.tf.txt"
 Pop-Location

@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "Single region for the whole research environment."
   type        = string
-  default     = "eu-west-2"
+  default     = "ap-southeast-2"
 }
 
 variable "state_bucket_name" {

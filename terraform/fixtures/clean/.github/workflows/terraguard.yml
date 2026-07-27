@@ -13,5 +13,5 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::000000000000:role/terraguard-ci
-          aws-region: eu-west-2
+          aws-region: ap-southeast-2
       - run: terraguard analyse --output reports/

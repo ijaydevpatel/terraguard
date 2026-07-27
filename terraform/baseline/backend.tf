@@ -4,7 +4,7 @@ terraform {
   backend "s3" {
     bucket         = "REPLACE_WITH_BOOTSTRAP_OUTPUT"
     key            = "baseline/terraform.tfstate"
-    region         = "eu-west-2"
+    region         = "ap-southeast-2"
     encrypt        = true
     dynamodb_table = "terraguard-tf-locks"
   }

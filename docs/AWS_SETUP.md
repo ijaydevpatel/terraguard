@@ -7,10 +7,32 @@ These steps cannot be automated from this repository. Do them once, in order.
 Use a research or sandbox account that holds nothing else. Do not reuse a personal account
 with real resources in it.
 
+### What a new account actually gets (accounts created after 15 July 2025)
+
+The old 12-month Free Tier no longer applies to new accounts. The current structure is:
+
+- Choose the **Free plan** at sign-up. It provides **USD 100 in credits**, rising to **USD 200**
+  by completing five onboarding activities worth USD 20 each.
+- One of those five activities is **creating a cost budget in AWS Budgets** - which
+  `terraform/bootstrap/budgets.tf` does on the first apply, so that USD 20 comes for free here.
+- The Free plan runs for **6 months**, or until the credits are spent, after which the account
+  is closed automatically. Credits themselves expire 12 months after account creation.
+- Over 30 services remain "always free" with permanent monthly limits.
+
+This project's footprint is a security group, three small S3 buckets, one IAM role and policy,
+one CloudTrail trail and an on-demand DynamoDB lock table. No EC2, no RDS. That sits inside the
+always-free limits for the most part and costs a few dollars at most against the credits, so a
+6-month window comfortably covers a project ending in November.
+
+One consequence worth noting: on the Free plan an exhausted credit balance closes the account
+rather than generating a bill. Keep the budget alarms and destroy resources between sessions.
+
 ## 2. Region lock
 
-Pick one region and never deviate: `eu-west-2` throughout this repo. Multi-region drift
-adds nothing to the research and doubles the cleanup surface.
+Pick one region and never deviate: **`ap-southeast-2` (Sydney)** throughout this repo, as the
+nearest mainstream region to New Zealand. Multi-region drift adds nothing to the research and
+doubles the cleanup surface. AWS Budgets is the one exception - it is a global service and is
+created in `us-east-1` through an aliased provider.
 
 ## 3. Budget alarms
 
@@ -22,7 +44,7 @@ first `apply`, so there is nothing to click:
 
 Set `budget_alert_email` in `terraform/bootstrap/terraform.tfvars` to an address you read.
 Budgets is a global service, so these are created in `us-east-1` via an aliased provider even
-though everything else lives in `eu-west-2`.
+though everything else lives in `ap-southeast-2`.
 
 ## 4. Local credentials
 

@@ -89,6 +89,6 @@ notes/decisions.md   running design log; the source of the methodology chapter
 
 ## Limitations
 
-Single region, single AWS account, AWS only, small controlled dataset, no automatic
+Single region (ap-southeast-2), single AWS account, AWS only, small controlled dataset, no automatic
 remediation, no dashboard. The severity models are exploratory: the transparent rule baseline
 in `severity_rules.py` is reported alongside them precisely because it may win.

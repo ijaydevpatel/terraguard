@@ -1,5 +1,5 @@
 # Copy to terraform.tfvars and edit. terraform.tfvars is gitignored.
-aws_region        = "eu-west-2"
+aws_region        = "ap-southeast-2"
 state_bucket_name = "terraguard-state-CHANGE-ME-0001" # must be globally unique
 lock_table_name   = "terraguard-tf-locks"
 
