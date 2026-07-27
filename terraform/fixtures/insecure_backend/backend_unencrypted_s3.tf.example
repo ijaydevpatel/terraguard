@@ -1,0 +1,9 @@
+# Second variant: remote but unencrypted and unlocked. Violates TG-P03 and TG-P05.
+terraform {
+  backend "s3" {
+    bucket  = "terraguard-state-example-0002"
+    key     = "baseline/terraform.tfstate"
+    region  = "eu-west-2"
+    encrypt = false
+  }
+}

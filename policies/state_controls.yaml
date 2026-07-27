@@ -1,0 +1,4 @@
+# Populated in Phase 4 (T045-T049).
+# Every control needs: id, name, description, evidence_source, applies_when,
+# decision, expected_secure_result, severity_if_violated, remediation, source.
+controls: []

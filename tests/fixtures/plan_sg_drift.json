@@ -1,0 +1,75 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.2",
+  "resource_drift": [
+    {
+      "address": "aws_vpc_security_group_ingress_rule.ssh_restricted",
+      "mode": "managed",
+      "type": "aws_vpc_security_group_ingress_rule",
+      "name": "ssh_restricted",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": {
+          "cidr_ipv4": "10.0.0.0/8",
+          "from_port": 22,
+          "to_port": 22,
+          "ip_protocol": "tcp",
+          "description": "SSH from the administrative CIDR only",
+          "tags": { "Name": "terraguard-baseline-sg" }
+        },
+        "after": {
+          "cidr_ipv4": "0.0.0.0/0",
+          "from_port": 22,
+          "to_port": 22,
+          "ip_protocol": "tcp",
+          "description": "SSH from the administrative CIDR only",
+          "tags": { "Name": "terraguard-baseline-sg" }
+        },
+        "before_sensitive": {},
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_s3_bucket.test",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "test",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": { "tags": { "Owner": "research" } },
+        "after": { "tags": { "Owner": "research-team" } },
+        "before_sensitive": {},
+        "after_sensitive": {}
+      }
+    }
+  ],
+  "resource_changes": [
+    {
+      "address": "aws_db_instance.synthetic",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "synthetic",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": {
+          "identifier": "terraguard-synthetic",
+          "password": "TERRAGUARD_TEST_SECRET_002",
+          "access_key": "AKIAIOSFODNN7EXAMPLE"
+        },
+        "after": {
+          "identifier": "terraguard-synthetic",
+          "password": "TERRAGUARD_TEST_SECRET_003",
+          "access_key": "AKIAIOSFODNN7EXAMPLE"
+        },
+        "before_sensitive": { "password": true },
+        "after_sensitive": { "password": true }
+      }
+    }
+  ],
+  "outputs": {
+    "test_bucket": { "value": "terraguard-test-ab12cd34", "type": "string" }
+  }
+}

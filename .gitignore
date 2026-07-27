@@ -1,0 +1,52 @@
+# ---- Terraform state and plans: NEVER commit ----
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+*.tfplan
+tfplan
+tfplan.*
+plan.json
+tfplan.json
+!tests/fixtures/*.json
+
+# Synthetic, sanitised fixtures are deliberately tracked. They contain only
+# TERRAGUARD_TEST_SECRET_nnn markers and non-existent account ids.
+!terraform/fixtures/**
+!terraform/fixtures/**/*.tfstate
+!terraform/fixtures/**/*.tfstate.backup
+!terraform/fixtures/**/tfplan.json
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+
+# ---- Credentials and secrets ----
+.env
+.env.*
+*.pem
+*.key
+credentials
+aws_credentials
+*.tfvars
+!example.tfvars
+
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# ---- Local evidence and model artefacts ----
+evidence/
+.terraguard_tmp/
+models/*.joblib
+reports/local/
