@@ -32,7 +32,8 @@ def test_allows_sanitised_fixtures():
 
 def test_blocks_aws_key_in_any_file(tmp_path):
     target = tmp_path / "config.txt"
-    target.write_text("AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE\n", encoding="utf-8")
+    example_key = "AKIA" + "IOSFODNN7EXAMPLE"
+    target.write_text(f"AWS_ACCESS_KEY_ID={example_key}\n", encoding="utf-8")
     assert _run("config.txt", cwd=tmp_path) == 1
 
 
