@@ -12,7 +12,9 @@ try:
     from rich.console import Console
     from rich.table import Table
 
-    _console: "Console | None" = Console()
+    # Unquoted is safe: `from __future__ import annotations` makes this annotation lazy,
+    # so `Console` is never looked up at runtime even when the import above failed.
+    _console: Console | None = Console()
 except Exception:  # rich is optional at runtime
     _console = None
 

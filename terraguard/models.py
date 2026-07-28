@@ -1,7 +1,7 @@
 """Shared record types. Every module in the pipeline speaks in these objects."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -93,7 +93,7 @@ class Finding(BaseModel):
     explanation: str = ""
     remediation: str = ""
     processing_time_ms: float | None = None
-    detected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    detected_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     raw: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -111,5 +111,5 @@ class EvidenceBundle(BaseModel):
     terraform_version: str | None = None
     commands_run: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
-    collected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    collected_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     duration_ms: float | None = None

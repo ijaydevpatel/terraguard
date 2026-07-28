@@ -69,7 +69,7 @@ def _redact(node: Any, sensitive: Any, *, salt: str, key: str | None = None) -> 
         out: dict[str, Any] = {}
         for k, v in node.items():
             sub = sensitive.get(k) if isinstance(sensitive, dict) else None
-            if SENSITIVE_KEY_RE.search(k) and not isinstance(v, (dict, list)):
+            if SENSITIVE_KEY_RE.search(k) and not isinstance(v, dict | list):
                 out[k] = redact_scalar(v, salt=salt)
             else:
                 out[k] = _redact(v, sub, salt=salt, key=k)
@@ -79,7 +79,9 @@ def _redact(node: Any, sensitive: Any, *, salt: str, key: str | None = None) -> 
         subs = sensitive if isinstance(sensitive, list) else [None] * len(node)
         if len(subs) != len(node):
             subs = [None] * len(node)
-        return [_redact(v, s, salt=salt, key=key) for v, s in zip(node, subs)]
+        # strict=False is deliberate: lengths are already reconciled two lines above,
+        # and a provider sending a mismatched sensitivity tree must not raise here.
+        return [_redact(v, s, salt=salt, key=key) for v, s in zip(node, subs, strict=False)]
 
     if value_looks_sensitive(node):
         return redact_scalar(node, salt=salt)

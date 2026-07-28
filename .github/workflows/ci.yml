@@ -40,6 +40,7 @@ jobs:
       - name: Ruff
         run: ruff check terraguard scripts tests
 
+      # --diff so the log shows exactly what would change, not just that something would.
       - name: Black
         run: black --check --diff terraguard scripts tests
 
