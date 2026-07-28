@@ -5,6 +5,7 @@ Invariants:
   * Raw plan JSON is written only inside a temp directory and deleted afterwards.
   * The only artefact that reaches the output directory is the sanitised plan JSON.
 """
+
 from __future__ import annotations
 
 import json

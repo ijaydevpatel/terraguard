@@ -1,4 +1,5 @@
 """Shared record types. Every module in the pipeline speaks in these objects."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime

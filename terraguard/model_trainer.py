@@ -2,6 +2,7 @@
 
 Status: stub. Implemented in Phase 7 (T078-T081).
 """
+
 from __future__ import annotations
 
 __all__: list[str] = []

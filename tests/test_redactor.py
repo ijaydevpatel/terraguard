@@ -1,4 +1,5 @@
 """Redaction is the control that makes every other artefact safe to keep. Test it hardest."""
+
 from __future__ import annotations
 
 import json

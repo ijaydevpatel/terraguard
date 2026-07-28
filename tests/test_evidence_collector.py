@@ -1,4 +1,5 @@
 """The offline path must work with no Terraform binary and no AWS credentials."""
+
 from __future__ import annotations
 
 import json

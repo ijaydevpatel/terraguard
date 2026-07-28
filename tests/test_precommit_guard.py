@@ -1,4 +1,5 @@
 """The Phase 0 exit criterion: a deliberate state-file commit is refused."""
+
 from __future__ import annotations
 
 import subprocess

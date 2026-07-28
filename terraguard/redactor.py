@@ -5,6 +5,7 @@ marks sensitive values in parallel `before_sensitive` / `after_sensitive` trees;
 we honour those, and additionally apply key-name and value-shape heuristics
 because provider coverage of the sensitive flag is inconsistent.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -22,11 +23,11 @@ SENSITIVE_KEY_RE = re.compile(
 )
 
 VALUE_PATTERNS = [
-    re.compile(r"(?<![A-Z0-9])(AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"),          # AWS key id
-    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),                          # PEM
-    re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),                                  # GitHub token
+    re.compile(r"(?<![A-Z0-9])(AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"),  # AWS key id
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),  # PEM
+    re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),  # GitHub token
     re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"),  # JWT
-    re.compile(r"TERRAGUARD_TEST_SECRET_\d+"),                                  # synthetic marker
+    re.compile(r"TERRAGUARD_TEST_SECRET_\d+"),  # synthetic marker
 ]
 
 
@@ -97,9 +98,7 @@ def redact_plan_obj(plan: dict[str, Any], *, salt: str = "") -> dict[str, Any]:
             change = item.get("change") or {}
             for side in ("before", "after"):
                 if side in change:
-                    change[side] = _redact(
-                        change[side], change.get(f"{side}_sensitive"), salt=salt
-                    )
+                    change[side] = _redact(change[side], change.get(f"{side}_sensitive"), salt=salt)
             change.pop("before_sensitive", None)
             change.pop("after_sensitive", None)
             change.pop("after_unknown", None)

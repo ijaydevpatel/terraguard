@@ -1,4 +1,5 @@
 """Command-line entry point. Phases 2-9 attach their subcommands here."""
+
 from __future__ import annotations
 
 import argparse
@@ -63,7 +64,9 @@ def cmd_collect(args: argparse.Namespace) -> int:
     else:
         print(json.dumps(json.loads(bundle.model_dump_json()), indent=2))
 
-    _echo(f"[green]bundle written:[/green] {bundle_path}" if _console else f"written: {bundle_path}")
+    _echo(
+        f"[green]bundle written:[/green] {bundle_path}" if _console else f"written: {bundle_path}"
+    )
     return 0
 
 

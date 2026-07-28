@@ -1,4 +1,5 @@
 """Phase 0 exit criteria: the package imports, the CLI runs, the version is reachable."""
+
 from __future__ import annotations
 
 import terraguard
