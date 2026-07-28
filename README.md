@@ -92,3 +92,10 @@ notes/decisions.md   running design log; the source of the methodology chapter
 Single region (ap-southeast-2), single AWS account, AWS only, small controlled dataset, no automatic
 remediation, no dashboard. The severity models are exploratory: the transparent rule baseline
 in `severity_rules.py` is reported alongside them precisely because it may win.
+
+## License
+
+MIT - see [LICENSE](LICENSE).
+
+Note that the synthetic fixtures under `terraform/fixtures/` are intentionally insecure
+configurations used as test oracles. They are not examples to copy.
