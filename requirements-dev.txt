@@ -2,4 +2,15 @@
 pre-commit==3.7.1
 black==24.4.2
 ruff==0.5.0
-checkov==3.2.200
+
+# Checkov is deliberately NOT installed here.
+#
+# It pins boto3==1.34.25 exactly, which cannot co-exist with the boto3 this project
+# needs, so adding it makes the dependency set unresolvable. It is also only used as an
+# external comparison benchmark in Phase 4 (T051, T052) - it is not an import-time
+# dependency of the terraguard package.
+#
+# Install it in its own isolated environment instead:
+#   pipx install checkov==3.2.200
+# or:
+#   python -m venv .venv-checkov && .venv-checkov\Scripts\pip install -r requirements-checkov.txt

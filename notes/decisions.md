@@ -48,6 +48,27 @@ whether the severity ranking shifts with environment. Only `test` is ever deploy
 
 ---
 
+## 2026-07-28 — CI, first run
+
+**Checkov is installed in its own virtual environment, not in `requirements-dev.txt`.**
+Alternative: keep it in the dev requirements and loosen the project's `boto3` pin to
+accommodate it. Rejected because checkov 3.2.200 pins `boto3==1.34.25` exactly, so pip's
+resolver fails outright (`ResolutionImpossible`) — which is how the first CI run failed after
+11 seconds. Letting a comparison benchmark dictate the project's own dependency versions is
+the wrong trade: `boto3` is used by the scenario injection scripts and the backend checks,
+where the version matters, whereas checkov is only invoked as an external command in Phase 4
+and is never imported by the package. `requirements-checkov.txt` plus a `.venv-checkov`
+environment keeps the benchmark available without coupling.
+Evidence: `requirements-dev.txt`, `requirements-checkov.txt`, CI run #1.
+
+**The CI job runs the security guard and the tests before the linters.**
+Alternative: lint first, as most templates do. Rejected because a formatting nit would then
+fail the job before the state-file guard or the test suite had reported anything, which
+obscures the failure that actually matters. Substance first, style second.
+Evidence: `.github/workflows/ci.yml`.
+
+---
+
 ## Template for new entries
 
 ```

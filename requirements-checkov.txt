@@ -1,0 +1,18 @@
+# Checkov lives in its own virtual environment, separate from the project's.
+#
+# Reason: checkov 3.2.200 pins boto3==1.34.25 exactly. Installing it alongside the
+# project's own boto3 makes pip's resolver fail outright (ResolutionImpossible), which
+# is exactly how the first CI run failed. Isolating it keeps the comparison benchmark
+# available without letting a benchmark tool dictate the project's dependency versions.
+#
+# Set up:
+#   python -m venv .venv-checkov
+#   .venv-checkov\Scripts\pip install -r requirements-checkov.txt   # Windows
+#   .venv-checkov/bin/pip install -r requirements-checkov.txt       # macOS/Linux
+#
+# Use (Phase 4, T051/T052):
+#   .venv-checkov\Scripts\checkov -d terraform/fixtures --compact -o json > reports/checkov_raw.json
+#
+# .venv-checkov/ is already covered by the .venv* ignore rules.
+
+checkov==3.2.200

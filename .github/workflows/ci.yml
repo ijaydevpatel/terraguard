@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
 
+# Least privilege: this workflow reads the repository and nothing else.
 permissions:
   contents: read
 
@@ -14,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Full history: the repository scanner searches past commits for state files.
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -27,17 +29,19 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -e .
 
-      - name: Ruff
-        run: ruff check terraguard scripts tests
-
-      - name: Black
-        run: black --check terraguard scripts tests
-
+      # Substance before style: the security guard and the tests run first, so a
+      # formatting nit never masks a real failure in the log.
       - name: State and plan file guard
         run: git ls-files | xargs python scripts/check_no_state_files.py
 
       - name: Tests
         run: pytest -q --cov=terraguard --cov-report=term-missing
+
+      - name: Ruff
+        run: ruff check terraguard scripts tests
+
+      - name: Black
+        run: black --check --diff terraguard scripts tests
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
