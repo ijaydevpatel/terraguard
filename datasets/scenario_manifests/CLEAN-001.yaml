@@ -1,0 +1,19 @@
+# Ground truth for CLEAN-001. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: CLEAN-001
+scenario_group: clean_control
+tier: core
+resource_type: baseline
+injected_change: no change - secure baseline left untouched
+expected_drift: false
+expected_attribute: ""
+expected_policy_status: compliant
+expected_control: ""
+expected_normalised_event: ""
+expected_severity_band: non_security_or_low
+expected_evidence_source: terraform_plan_json
+needs_aws: false
+planned_variations: 8
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

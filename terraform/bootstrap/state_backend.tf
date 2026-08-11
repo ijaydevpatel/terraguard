@@ -65,17 +65,11 @@ resource "aws_s3_bucket_policy" "state_tls_only" {
   })
 }
 
-resource "aws_dynamodb_table" "locks" {
-  name         = var.lock_table_name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  server_side_encryption {
-    enabled = true
-  }
-}
+# No DynamoDB lock table.
+#
+# Terraform 1.10 introduced S3-native state locking via `use_lockfile`, which takes the lock
+# with an S3 conditional write (If-None-Match) instead of a separate table. Terraform 1.11
+# deprecated the `dynamodb_table` backend argument, and it will be removed in a future minor
+# version. Using the native lock removes a whole resource, its IAM surface and its cost from
+# the research environment, and keeps the backend on a supported path for the life of the
+# project. Locking is enabled in the backend block, not here - see outputs.tf.

@@ -1,0 +1,19 @@
+# Ground truth for WF-001. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: WF-001
+scenario_group: state_security
+tier: core
+resource_type: github_workflow
+injected_change: workflow uploads the saved plan and omits a permissions block
+expected_drift: false
+expected_attribute: jobs.plan.steps
+expected_policy_status: non_compliant
+expected_control: TG-P07
+expected_normalised_event: insecure_state_handling
+expected_severity_band: high_or_critical
+expected_evidence_source: workflow
+needs_aws: false
+planned_variations: 6
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

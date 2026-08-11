@@ -28,21 +28,6 @@
       "Resource": "*"
     },
     {
-      "Sid": "StateLocking",
-      "Effect": "Allow",
-      "Action": [
-        "dynamodb:CreateTable",
-        "dynamodb:DescribeTable",
-        "dynamodb:DeleteTable",
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:DeleteItem",
-        "dynamodb:TagResource",
-        "dynamodb:ListTagsOfResource"
-      ],
-      "Resource": "*"
-    },
-    {
       "Sid": "SecurityGroupsForDriftScenarios",
       "Effect": "Allow",
       "Action": [

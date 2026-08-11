@@ -1,0 +1,19 @@
+# Ground truth for SG-003. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: SG-003
+scenario_group: infrastructure_drift
+tier: optional
+resource_type: aws_vpc_security_group_ingress_rule
+injected_change: unrestricted IPv6 ingress (::/0)
+expected_drift: true
+expected_attribute: cidr_ipv6
+expected_policy_status: non_compliant
+expected_control: TG-P10
+expected_normalised_event: restricted_to_public_network_access
+expected_severity_band: high_or_critical
+expected_evidence_source: terraform_plan_json
+needs_aws: true
+planned_variations: 3
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

@@ -1,4 +1,25 @@
-# Populated in Phase 4 (T045-T049).
-# Every control needs: id, name, description, evidence_source, applies_when,
-# decision, expected_secure_result, severity_if_violated, remediation, source.
-controls: []
+# Optional controls - assessed only if the core eight are complete and time remains.
+controls:
+  - id: TG-P10
+    name: Public network access is restricted
+    tier: optional
+    description: Administrative ports reachable from any address.
+    evidence_source: terraform_plan_json
+    applies_when: a plan JSON containing security group rules is available
+    decision: non_compliant if a rule moves from a restricted CIDR to 0.0.0.0/0 or ::/0
+    expected_secure_result: ingress restricted to a private range
+    severity_if_violated: critical
+    remediation: Restore the administrative CIDR.
+    source: AWS Config restricted-ssh; vpc-sg-open-only-to-authorized-ports
+
+  - id: TG-P12
+    name: Required encryption and logging remain enabled
+    tier: optional
+    description: Encryption or logging turned off outside Terraform.
+    evidence_source: terraform_plan_json
+    applies_when: a plan JSON containing the relevant resources is available
+    decision: non_compliant if encryption or logging moves from enabled to disabled
+    expected_secure_result: both remain enabled
+    severity_if_violated: high
+    remediation: Re-enable and re-apply the baseline.
+    source: AWS Config s3-bucket-logging-enabled; cloudtrail-enabled

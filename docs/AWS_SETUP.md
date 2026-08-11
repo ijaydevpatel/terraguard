@@ -20,7 +20,7 @@ The old 12-month Free Tier no longer applies to new accounts. The current struct
 - Over 30 services remain "always free" with permanent monthly limits.
 
 This project's footprint is a security group, three small S3 buckets, one IAM role and policy,
-one CloudTrail trail and an on-demand DynamoDB lock table. No EC2, no RDS. That sits inside the
+and one CloudTrail trail. State locking is S3-native, so there is no lock table. No EC2, no RDS. That sits inside the
 always-free limits for the most part and costs a few dollars at most against the credits, so a
 6-month window comfortably covers a project ending in November.
 
@@ -29,10 +29,17 @@ rather than generating a bill. Keep the budget alarms and destroy resources betw
 
 ## 2. Region lock
 
-Pick one region and never deviate: **`ap-southeast-2` (Sydney)** throughout this repo, as the
-nearest mainstream region to New Zealand. Multi-region drift adds nothing to the research and
-doubles the cleanup surface. AWS Budgets is the one exception - it is a global service and is
-created in `us-east-1` through an aliased provider.
+Pick one region and never deviate: **`ap-southeast-2` (Sydney)** throughout this repo.
+
+AWS opened **`ap-southeast-6` (Asia Pacific, New Zealand)** in Auckland on 2 September 2025,
+so Sydney is no longer the closest region. Sydney is still the deliberate choice here: it has
+the broader service catalogue and far more documentation and community material, which matters
+more for a research prototype than the small latency saving. Recorded as a decision rather
+than left as an unexamined default.
+
+Multi-region drift adds nothing to the research and doubles the cleanup surface. AWS Budgets is
+the one exception - it is a global service and is created in `us-east-1` through an aliased
+provider.
 
 ## 3. Budget alarms
 
@@ -50,7 +57,7 @@ though everything else lives in `ap-southeast-2`.
 
 Create an IAM user for local development with programmatic access only and attach the policy
 in `docs/iam/local_dev_policy.json`. It is scoped to exactly the services this project needs -
-S3, EC2 security groups, IAM, CloudTrail, DynamoDB, Budgets, STS - and carries an explicit
+S3, EC2 security groups, IAM, CloudTrail, Budgets, STS - and carries an explicit
 `Deny` on the expensive ones (`ec2:RunInstances`, RDS, EKS, ElastiCache, SageMaker, Redshift)
 so a mistake cannot become a bill.
 

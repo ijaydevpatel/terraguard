@@ -3,7 +3,7 @@ terraform {
     bucket         = "terraguard-state-example-0001"
     key            = "baseline/terraform.tfstate"
     region         = "ap-southeast-2"
-    encrypt        = true
-    dynamodb_table = "terraguard-tf-locks"
+    encrypt      = true
+    use_lockfile = true
   }
 }

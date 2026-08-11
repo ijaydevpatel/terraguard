@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+import datetime as _dt
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+# datetime.UTC exists from Python 3.11. The project targets 3.11+, but resolving it this
+# way keeps the package importable on 3.10 and, unlike a try/except import, cannot be
+# rewritten into a self-reference by an autofixer.
+UTC = getattr(_dt, "UTC", _dt.timezone.utc)  # noqa: UP017
 
 
 class Severity(str, Enum):

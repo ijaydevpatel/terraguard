@@ -1,4 +1,58 @@
-# Populated in Phase 4 (T045-T049).
-# Every control needs: id, name, description, evidence_source, applies_when,
-# decision, expected_secure_result, severity_if_violated, remediation, source.
-controls: []
+# Core controls TG-P01 to TG-P04 - Terraform state and its backend.
+# Each control cites the source it is derived from. Citations are part of the control,
+# not an afterthought: an uncited control cannot be defended in the write-up.
+controls:
+  - id: TG-P01
+    name: Terraform state and plan files are not committed to Git
+    tier: core
+    description: >
+      State and plan files record every attribute of every managed resource, including
+      values the provider marks sensitive. Committing them publishes those values to
+      everyone with repository access and to the whole history.
+    evidence_source: repository
+    applies_when: a git repository is available
+    decision: non_compliant if any tracked or historic path matches a state or plan pattern
+    expected_secure_result: no state, backup or saved-plan file anywhere in the repository
+    severity_if_violated: high
+    remediation: Remove the file, purge it from history, and rely on the encrypted remote backend.
+    source: HashiCorp - "Terraform state can contain sensitive data" (state sensitive-data docs)
+
+  - id: TG-P02
+    name: Terraform state uses a secure remote backend
+    tier: core
+    description: >
+      A local backend leaves state on whichever machine last ran Terraform, with no
+      locking, no versioning and no access control.
+    evidence_source: backend_config
+    applies_when: a Terraform configuration with a terraform block is present
+    decision: non_compliant if the backend is local, absent, or the bucket allows public access
+    expected_secure_result: remote S3 backend with public access blocked
+    severity_if_violated: high
+    remediation: Use the encrypted S3 backend created by terraform/bootstrap.
+    source: HashiCorp backend documentation; AWS Config s3-bucket-public-read-prohibited
+
+  - id: TG-P03
+    name: State bucket encryption is enabled
+    tier: core
+    description: Encryption at rest for the object holding state.
+    evidence_source: backend_config
+    applies_when: an S3 backend is configured
+    decision: non_compliant if encrypt is not true, or the bucket has no default encryption
+    expected_secure_result: encrypt = true and bucket-level SSE configured
+    severity_if_violated: high
+    remediation: Set encrypt = true and enable default encryption on the bucket.
+    source: AWS Config s3-bucket-server-side-encryption-enabled
+
+  - id: TG-P04
+    name: State locking is configured and not deprecated
+    tier: core
+    description: >
+      Without locking, two concurrent applies can corrupt state. Terraform 1.11 deprecates
+      the dynamodb_table argument in favour of S3-native locking.
+    evidence_source: backend_config
+    applies_when: an S3 backend is configured
+    decision: non_compliant if no locking is configured, or if dynamodb_table is still used
+    expected_secure_result: use_lockfile = true
+    severity_if_violated: medium
+    remediation: Set use_lockfile = true and remove dynamodb_table.
+    source: HashiCorp S3 backend documentation, Terraform 1.10/1.11 release notes

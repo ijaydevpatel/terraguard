@@ -66,7 +66,7 @@ See `docs/AWS_SETUP.md` for the account, budget-alarm and OIDC steps, which are 
 ```
 terraguard/          package: collector, parser, scanners, policy engine, features, models, reporting
 policies/            TG-P01..TG-P12 control catalogue (YAML)
-terraform/bootstrap/ encrypted S3 + DynamoDB state backend
+terraform/bootstrap/ encrypted S3 state backend with native locking, budgets, OIDC role
 terraform/baseline/  the secure baseline: 1 SG, 2 buckets + log bucket, 1 role + policy, 1 trail
 terraform/fixtures/  synthetic clean / insecure_backend / insecure_workflow / exposed_state
 scenarios/           out-of-band injection scripts (Phase 5)

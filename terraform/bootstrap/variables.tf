@@ -1,5 +1,13 @@
 variable "aws_region" {
-  description = "Single region for the whole research environment."
+  description = <<-EOT
+    Single region for the whole research environment.
+
+    ap-southeast-2 (Sydney) is chosen over ap-southeast-6 (New Zealand, launched
+    September 2025) for service maturity and breadth: Sydney has the longer service
+    catalogue and the deeper body of documentation, which matters more for a research
+    prototype than the ~25 ms of latency saved. Recorded as a deliberate choice rather
+    than a default.
+  EOT
   type        = string
   default     = "ap-southeast-2"
 }
@@ -7,12 +15,6 @@ variable "aws_region" {
 variable "state_bucket_name" {
   description = "Globally unique name for the Terraform state bucket."
   type        = string
-}
-
-variable "lock_table_name" {
-  description = "DynamoDB table used for state locking."
-  type        = string
-  default     = "terraguard-tf-locks"
 }
 
 variable "budget_alert_email" {

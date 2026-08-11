@@ -1,0 +1,19 @@
+# Ground truth for TAG-001. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: TAG-001
+scenario_group: infrastructure_drift
+tier: core
+resource_type: aws_s3_bucket
+injected_change: harmless tag value changed
+expected_drift: true
+expected_attribute: tags.Owner
+expected_policy_status: compliant
+expected_control: ""
+expected_normalised_event: non_security_operational_drift
+expected_severity_band: non_security_or_low
+expected_evidence_source: terraform_plan_json
+needs_aws: true
+planned_variations: 6
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

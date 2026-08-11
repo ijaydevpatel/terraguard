@@ -1,0 +1,19 @@
+# Ground truth for S3-001. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: S3-001
+scenario_group: infrastructure_drift
+tier: core
+resource_type: aws_s3_bucket_server_side_encryption_configuration
+injected_change: default encryption removed from the test bucket
+expected_drift: true
+expected_attribute: rule.0.apply_server_side_encryption_by_default.sse_algorithm
+expected_policy_status: non_compliant
+expected_control: TG-P12
+expected_normalised_event: encryption_disabled
+expected_severity_band: high_or_critical
+expected_evidence_source: terraform_plan_json
+needs_aws: true
+planned_variations: 4
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

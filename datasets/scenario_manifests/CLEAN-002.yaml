@@ -1,0 +1,19 @@
+# Ground truth for CLEAN-002. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: CLEAN-002
+scenario_group: clean_control
+tier: optional
+resource_type: github_workflow
+injected_change: least-privilege workflow, no artefacts
+expected_drift: false
+expected_attribute: ""
+expected_policy_status: compliant
+expected_control: ""
+expected_normalised_event: ""
+expected_severity_band: non_security_or_low
+expected_evidence_source: workflow
+needs_aws: false
+planned_variations: 3
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

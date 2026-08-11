@@ -70,7 +70,6 @@ data "aws_iam_policy_document" "github_ci_readonly" {
       "cloudtrail:GetTrail",
       "cloudtrail:GetTrailStatus",
       "cloudtrail:ListTrails",
-      "dynamodb:DescribeTable",
     ]
 
     resources = ["*"]
@@ -80,6 +79,9 @@ data "aws_iam_policy_document" "github_ci_readonly" {
     sid    = "ReadAndLockTerraformState"
     effect = "Allow"
 
+    # S3-native locking writes and deletes a .tflock object alongside the state file,
+    # so PutObject and DeleteObject on the bucket prefix cover both state access and
+    # locking. No separate DynamoDB permissions are needed.
     actions = [
       "s3:GetObject",
       "s3:PutObject",
@@ -87,13 +89,6 @@ data "aws_iam_policy_document" "github_ci_readonly" {
     ]
 
     resources = ["arn:aws:s3:::${var.state_bucket_name}/*"]
-  }
-
-  statement {
-    sid       = "StateLocking"
-    effect    = "Allow"
-    actions   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:DeleteItem"]
-    resources = [aws_dynamodb_table.locks.arn]
   }
 }
 

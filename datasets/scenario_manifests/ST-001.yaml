@@ -1,0 +1,19 @@
+# Ground truth for ST-001. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: ST-001
+scenario_group: state_security
+tier: core
+resource_type: repository_file
+injected_change: state file committed to the repository
+expected_drift: false
+expected_attribute: terraform.tfstate
+expected_policy_status: non_compliant
+expected_control: TG-P01
+expected_normalised_event: insecure_state_handling
+expected_severity_band: high_or_critical
+expected_evidence_source: repository
+needs_aws: false
+planned_variations: 4
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

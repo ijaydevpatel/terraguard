@@ -1,0 +1,19 @@
+# Ground truth for DEL-001. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: DEL-001
+scenario_group: infrastructure_drift
+tier: core
+resource_type: aws_s3_bucket
+injected_change: managed bucket deleted outside Terraform
+expected_drift: true
+expected_attribute: resource
+expected_policy_status: non_compliant
+expected_control: TG-P12
+expected_normalised_event: out_of_band_deletion
+expected_severity_band: high_or_critical
+expected_evidence_source: terraform_plan_json
+needs_aws: true
+planned_variations: 3
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

@@ -1,0 +1,19 @@
+# Ground truth for BK-001. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: BK-001
+scenario_group: state_security
+tier: core
+resource_type: terraform_backend
+injected_change: backend switched to local state
+expected_drift: false
+expected_attribute: backend
+expected_policy_status: non_compliant
+expected_control: TG-P02
+expected_normalised_event: insecure_state_handling
+expected_severity_band: high_or_critical
+expected_evidence_source: backend_config
+needs_aws: false
+planned_variations: 4
+restore: scenarios/restore_baseline.py
+notes: >
+  Severity is recorded as a band, not a single class. The final label is assigned using
+  the written rubric and reviewed on a sample; see T111 and T112.

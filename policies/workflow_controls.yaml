@@ -1,4 +1,55 @@
-# Populated in Phase 4 (T045-T049).
-# Every control needs: id, name, description, evidence_source, applies_when,
-# decision, expected_secure_result, severity_if_violated, remediation, source.
-controls: []
+# Core controls TG-P05 to TG-P08 - CI/CD handling of state, plans and credentials.
+controls:
+  - id: TG-P05
+    name: State bucket versioning is enabled
+    tier: core
+    description: Versioning is what makes a corrupted or truncated state recoverable.
+    evidence_source: aws_api
+    applies_when: live AWS credentials are available for the state bucket
+    decision: non_compliant if versioning status is not Enabled; indeterminate if it cannot be read
+    expected_secure_result: versioning Enabled
+    severity_if_violated: medium
+    remediation: Enable versioning on the state bucket.
+    source: AWS Config s3-bucket-versioning-enabled
+
+  - id: TG-P06
+    name: Sensitive Terraform output is not exposed in logs or tracked files
+    tier: core
+    description: >
+      Printing a plan or state to a job log copies secrets into build output that is
+      retained and often widely readable.
+    evidence_source: workflow
+    applies_when: a workflow or tracked file is available
+    decision: non_compliant if plan content is echoed to the log or a credential appears in a tracked file
+    expected_secure_result: only redacted output reaches logs and artefacts
+    severity_if_violated: critical
+    remediation: Pass everything through the redactor before display.
+    source: HashiCorp plan documentation - saved plans are not encrypted
+
+  - id: TG-P07
+    name: Saved plans are not uploaded as artefacts or cached
+    tier: core
+    description: >
+      A saved plan is state-derived. Publishing it as a workflow artefact makes it
+      downloadable by anyone who can read the run.
+    evidence_source: workflow
+    applies_when: a GitHub Actions workflow is present
+    decision: non_compliant if a plan or state path is uploaded or cached
+    expected_secure_result: no plan or state artefact is produced
+    severity_if_violated: high
+    remediation: Publish a sanitised report instead of the plan.
+    source: HashiCorp plan documentation; GitHub Actions artefact retention
+
+  - id: TG-P08
+    name: GitHub Actions uses least-privilege token permissions
+    tier: core
+    description: >
+      With no permissions block the GITHUB_TOKEN inherits the repository default, which is
+      frequently write.
+    evidence_source: workflow
+    applies_when: a GitHub Actions workflow is present
+    decision: non_compliant if no permissions block exists, or permissions is read-all/write-all
+    expected_secure_result: an explicit minimal permissions block
+    severity_if_violated: medium
+    remediation: Add permissions with only the scopes the job needs.
+    source: GitHub Actions documentation - automatic token authentication
