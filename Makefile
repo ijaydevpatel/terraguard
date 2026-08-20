@@ -1,4 +1,4 @@
-.PHONY: install test lint fmt guard demo clean
+.PHONY: install test lint fmt guard secrets check demo clean
 
 install:
 	pip install -r requirements-dev.txt && pip install -e . && pre-commit install
@@ -14,6 +14,13 @@ fmt:
 
 guard:
 	git ls-files | xargs python scripts/check_no_state_files.py
+
+secrets:
+	# gitleaks runs in CI but not in requirements-dev; the pre-commit hook is the local route.
+	pre-commit run gitleaks --all-files
+
+check: guard test lint secrets
+	# everything CI runs, in the same order
 
 demo:
 	terraguard collect --plan-json tests/fixtures/plan_sg_drift.json --output evidence/
