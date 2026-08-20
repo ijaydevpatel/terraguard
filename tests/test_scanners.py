@@ -100,3 +100,74 @@ def test_every_scanner_emits_the_same_finding_shape():
     for f in findings:
         assert isinstance(f.evidence_source, EvidenceSource)
         assert f.finding_id and f.control_id
+
+
+# ---------------------------------------------------------------- secrets with no shape
+def test_password_under_a_sensitive_key_is_detected():
+    """A password is just a string. The key it sits under is the only signal."""
+    from terraguard.repository_scanner import find_sensitive_key_values
+
+    state = '{"outputs": {"db_password": {"value": "Sup3rSecret!"}}, "password": "hunter22"}'
+    keys = {k for k, _ in find_sensitive_key_values(state)}
+    assert "db_password" in keys or "password" in keys
+
+
+def test_hcl_and_yaml_forms_are_both_read():
+    from terraguard.repository_scanner import find_sensitive_key_values
+
+    assert find_sensitive_key_values('master_password = "correcthorse"')
+    assert find_sensitive_key_values("api_key: abcdef123456")
+
+
+def test_variable_references_and_placeholders_are_not_secrets():
+    """Flagging `password = var.db_password` would make the check useless within a day."""
+    from terraguard.repository_scanner import find_sensitive_key_values
+
+    for benign in (
+        "password = var.db_password",
+        "password = local.secret",
+        '"password": "${var.pw}"',
+        'password = "REPLACE_ME"',
+        'api_key = "YOUR_KEY_HERE"',
+        '"token": ""',
+        '"secret": null',
+        'password = "xxxx"',
+    ):
+        assert not find_sensitive_key_values(benign), benign
+
+
+def test_the_value_itself_is_never_reported():
+    from terraguard.repository_scanner import find_sensitive_key_values
+
+    out = find_sensitive_key_values('"password": "Sup3rSecret!"')
+    rendered = " ".join(f"{k} {v}" for k, v in out)
+    assert "Sup3rSecret" not in rendered
+    assert "characters" in rendered
+
+
+def test_ordinary_keys_are_ignored():
+    from terraguard.repository_scanner import find_sensitive_key_values
+
+    assert not find_sensitive_key_values('"bucket_name": "terraguard-test-ab12"')
+
+
+# ---------------------------------------------------------------- leftover working files
+def test_temp_and_leftover_state_artefacts_are_flagged():
+    from terraguard.repository_scanner import scan_temp_artefacts
+
+    paths = [
+        "terraform.tfstate.tmp",
+        "terraform.tfstate.1",
+        "plan.out",
+        ".terraform/terraform.tfstate",
+        "crash.log",
+    ]
+    findings = scan_temp_artefacts(paths)
+    assert len(findings) == len(paths)
+    assert {f.control_id for f in findings} == {"TG-P01"}
+
+
+def test_ordinary_files_are_not_mistaken_for_temp_artefacts():
+    from terraguard.repository_scanner import scan_temp_artefacts
+
+    assert scan_temp_artefacts(["main.tf", "README.md", "plan_parser.py"]) == []

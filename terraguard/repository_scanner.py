@@ -16,7 +16,14 @@ from pathlib import Path
 
 from .models import EvidenceSource, Finding, NormalisedEvent
 
-__all__ = ["scan_repository", "scan_paths", "history_paths", "tracked_paths"]
+__all__ = [
+    "scan_repository",
+    "scan_paths",
+    "scan_temp_artefacts",
+    "find_sensitive_key_values",
+    "history_paths",
+    "tracked_paths",
+]
 
 STATE_PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     (re.compile(r"\.tfstate$"), "TG-P01", "Terraform state file"),
@@ -31,6 +38,63 @@ SECRET_PATTERNS = [
     (re.compile(r"(?<![A-Z0-9])(AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"), "AWS access key id"),
     (re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"), "private key"),
     (re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"), "GitHub token"),
+]
+
+# Shape-based patterns above only catch credentials that look like credentials. A password
+# is just a string, so the only signal is the key it sits under. State files are full of
+# these: `"password": "hunter2"` carries no recognisable shape at all.
+SENSITIVE_KEY_RE = re.compile(
+    r"(password|passwd|secret|token|api_?key|access_?key|secret_?key|private_?key|"
+    r"credential|client_secret|session_token|connection_string|master_password)",
+    re.IGNORECASE,
+)
+
+# JSON: "password": "value"   |   HCL/YAML: password = "value" / password: value
+_KV_PATTERNS = [
+    re.compile(r'"(?P<key>[A-Za-z0-9_.-]+)"\s*:\s*"(?P<value>[^"\n]{1,200})"'),
+    re.compile(r"(?P<key>[A-Za-z0-9_.-]+)\s*=\s*\"(?P<value>[^\"\n]{1,200})\""),
+    re.compile(r"^\s*(?P<key>[A-Za-z0-9_.-]+)\s*:\s*(?P<value>[^\s#\n][^\n]{0,200})$", re.M),
+]
+
+# A value that is a reference, a placeholder or an obvious dummy is not a leak. Flagging
+# `password = var.db_password` would make the check useless within a day.
+_NOT_A_SECRET = re.compile(
+    r"^\s*$|^(var|local|module|data|each|count)\.|^\$\{|^\{\{|"
+    r"REPLACE|CHANGE.?ME|YOUR_|EXAMPLE|PLACEHOLDER|TODO|xxx+|\*{3,}|"
+    r"^(true|false|null|none|nil)$|^[0-9]+$|^TERRAGUARD_TEST_SECRET_",
+    re.IGNORECASE,
+)
+
+
+def find_sensitive_key_values(text: str) -> list[tuple[str, str]]:
+    """Return (key, redacted_preview) for values sitting under a sensitive key name.
+
+    Only the key name and a length are reported. The value itself is never echoed - a
+    scanner that prints the secret it found has moved the problem, not solved it.
+    """
+    out: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for pattern in _KV_PATTERNS:
+        for m in pattern.finditer(text):
+            key, value = m.group("key"), m.group("value").strip().strip("\"'")
+            if not SENSITIVE_KEY_RE.search(key):
+                continue
+            if _NOT_A_SECRET.match(value) or len(value) < 4:
+                continue
+            if key.lower() in seen:
+                continue
+            seen.add(key.lower())
+            out.append((key, f"{len(value)} characters"))
+    return out
+
+
+# Leftover working files that routinely hold state or plan content.
+TEMP_ARTEFACT_PATTERNS = [
+    (re.compile(r"\.tfstate\.(tmp|temp|old|orig|save|swp)$"), "leftover state working file"),
+    (re.compile(r"(^|/)terraform\.tfstate\.\d+$"), "numbered state copy"),
+    (re.compile(r"(^|/)(plan|tfplan)\.(out|txt|log)$"), "plan output captured to a file"),
+    (re.compile(r"(^|/)\.terraform/terraform\.tfstate$"), "state cached under .terraform"),
+    (re.compile(r"(^|/)crash\.log$"), "Terraform crash log (can contain state values)"),
 ]
 
 # Synthetic fixtures are deliberately insecure and are the scanner's own test oracle.
@@ -117,6 +181,7 @@ def scan_file_contents(repo: Path, paths: list[str]) -> list[Finding]:
             text = target.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
+        matched = False
         for pattern, label in SECRET_PATTERNS:
             if pattern.search(text):
                 findings.append(
@@ -129,6 +194,55 @@ def scan_file_contents(repo: Path, paths: list[str]) -> list[Finding]:
                         control_id="TG-P06",
                         detail=f"{label} found in a tracked file",
                         remediation="Rotate the credential, then purge it from history.",
+                    )
+                )
+                matched = True
+                break
+        if matched:
+            continue
+        for key, size in find_sensitive_key_values(text):
+            findings.append(
+                Finding(
+                    finding_id=f"repo:{posix}:{key}",
+                    evidence_source=EvidenceSource.REPOSITORY,
+                    resource_type="repository_file",
+                    resource_address=posix,
+                    normalised_event=NormalisedEvent.SENSITIVE_DATA_EXPOSURE,
+                    control_id="TG-P06",
+                    detail=f"value under sensitive key '{key}' ({size}) in a tracked file",
+                    explanation=(
+                        "A password has no recognisable shape, so the key it sits under is the "
+                        "only signal. The value is not reproduced here."
+                    ),
+                    remediation="Rotate the credential, then purge it from history.",
+                )
+            )
+    return findings
+
+
+def scan_temp_artefacts(paths: list[str], *, include_fixtures: bool = False) -> list[Finding]:
+    """Leftover working files that hold state or plan content.
+
+    Covers the temporary-file and deletion part of the state data lifecycle: a state file
+    removed from its normal path can survive as a .tmp, a numbered copy or a crash log.
+    """
+    findings: list[Finding] = []
+    for path in paths:
+        posix = path.replace("\\", "/")
+        if not include_fixtures and _is_fixture(posix):
+            continue
+        for pattern, label in TEMP_ARTEFACT_PATTERNS:
+            if pattern.search(posix):
+                findings.append(
+                    Finding(
+                        finding_id=f"repo:{posix}:tempfile",
+                        evidence_source=EvidenceSource.REPOSITORY,
+                        resource_type="repository_file",
+                        resource_address=posix,
+                        normalised_event=NormalisedEvent.INSECURE_STATE_HANDLING,
+                        control_id="TG-P01",
+                        detail=f"{label} present",
+                        remediation="Delete the file and add its pattern to .gitignore.",
                     )
                 )
                 break
@@ -144,4 +258,5 @@ def scan_repository(repo_root: str | Path, *, include_history: bool = True) -> l
     findings = scan_paths(tracked)
     findings += scan_paths(sorted(historic), in_history_only=historic)
     findings += scan_file_contents(repo, tracked)
+    findings += scan_temp_artefacts(tracked)
     return findings
