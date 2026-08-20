@@ -124,3 +124,32 @@ Evidence: to be implemented in `model_trainer.py` (Phase 7).
 Alternative: <what else was considered>. Rejected because <reason>.
 Evidence: <file, test, or report artefact that shows it>.
 ```
+
+---
+
+## 2026-08-11 — Phase 5 pilot
+
+**The harness reads the manifest, then sets it aside until the row is written.**
+Alternative: pass the expected control into the scanners so the harness can short-circuit.
+Rejected because detection would then be able to see the answer while deciding, and every
+detection figure in the results would be worthless. `run_experiment.py` loads the manifest
+first, runs collection and assessment blind, and compares only at the end.
+Evidence: `scenarios/run_experiment.py`, `tests/test_experiment_harness.py`.
+
+**A drift scenario with no plan JSON fails loudly rather than writing an empty row.**
+Alternative: skip silently and carry on. Rejected because a partial dataset that looks
+complete is worse than one that is visibly short. Running SG-001 without a deployed baseline
+exits non-zero and says why.
+Evidence: `test_drift_scenario_without_a_plan_is_refused_not_guessed`.
+
+**Assessment coverage is reported with every run.**
+The pilot made the reason concrete. ST-001 supplies repository evidence only, so seven of
+eight controls return indeterminate and coverage reads 0.12; the clean controls reach 0.88.
+A compliance rate quoted without its coverage cannot be interpreted, so the results chapter
+reports both together.
+
+**Severity is recorded as a band from the manifest, not as a label.**
+The `deterministic_severity` column exists but is empty until Phase 6 fills it. Adding the
+column now means populating it later is not a schema change. Final labels need the rubric in
+`docs/SEVERITY_RUBRIC.md` and a review sample from someone other than the author (T112);
+until then the column carries no weight.

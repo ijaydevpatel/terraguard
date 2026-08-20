@@ -1,0 +1,44 @@
+name: terraform-plan-insecure
+on: [push]
+
+# No permissions block at all: GITHUB_TOKEN gets the repository default.
+# Violates TG-P08.
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    env:
+      # Long-lived static credentials. Violates TG-P09.
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - run: terraform init
+      - run: terraform plan -out=tfplan
+      - run: terraform show -json tfplan > tfplan.json
+
+      # Prints plan contents into the job log. Violates TG-P06.
+      - name: Show plan
+        run: cat tfplan.json
+
+      - name: Echo marker
+        run: echo "token=TERRAGUARD_TEST_SECRET_001"
+
+      # Saved plan published as a general artefact. Violates TG-P07.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: |
+            tfplan
+            tfplan.json
+
+      # State cached across runs. Violates TG-P01 in spirit and TG-P07.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            terraform.tfstate
+            .terraform
+          key: tfstate-${{ github.sha }}

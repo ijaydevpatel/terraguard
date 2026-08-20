@@ -1,0 +1,17 @@
+name: terraguard-clean
+on: [pull_request]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::000000000000:role/terraguard-ci
+          aws-region: ap-southeast-2
+      - run: terraguard analyse --output reports/
