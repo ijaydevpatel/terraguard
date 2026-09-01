@@ -19,7 +19,12 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 EXPECTED_SHEETS = [
-    "Task Tracker", "Dashboard", "Milestones", "Risk Register", "How to use", "Change Log",
+    "Task Tracker",
+    "Dashboard",
+    "Milestones",
+    "Risk Register",
+    "How to use",
+    "Change Log",
 ]
 MILESTONE_WORDS = {"Planned", "In progress", "At risk", "Met", "Missed"}
 STATUS_WORDS = {"Not started", "In progress", "Blocked", "Done", "Dropped"}
@@ -46,8 +51,13 @@ def check(path: Path) -> list[str]:
             continue
         tid = str(tid).strip()
         ids.append(tid)
-        tasks[tid] = {"row": r, "status": tt.cell(r, 10).value, "week": tt.cell(r, 4).value,
-                      "effort": tt.cell(r, 8).value, "note": tt.cell(r, 12).value}
+        tasks[tid] = {
+            "row": r,
+            "status": tt.cell(r, 10).value,
+            "week": tt.cell(r, 4).value,
+            "effort": tt.cell(r, 8).value,
+            "note": tt.cell(r, 12).value,
+        }
     dupes = {i for i in ids if ids.count(i) > 1}
     if dupes:
         problems.append(f"Task Tracker: duplicate ids {sorted(dupes)}")
@@ -70,7 +80,9 @@ def check(path: Path) -> list[str]:
                 problems.append(f"Task Tracker: {tid} depends on unknown {dep}")
                 continue
             if order.get(str(t["week"]), 99) < order.get(str(tasks[dep]["week"]), 0):
-                problems.append(f"Task Tracker: {tid} ({t['week']}) starts before {dep} ({tasks[dep]['week']})")
+                problems.append(
+                    f"Task Tracker: {tid} ({t['week']}) starts before {dep} ({tasks[dep]['week']})"
+                )
             if t["status"] == "Done" and tasks[dep]["status"] != "Done":
                 problems.append(f"Task Tracker: {tid} is Done but {dep} is {tasks[dep]['status']}")
 
@@ -79,7 +91,9 @@ def check(path: Path) -> list[str]:
         f = str(d.cell(row, 2).value or "")
         for ref in re.findall(r"\$[A-L]\$5:\$[A-L]\$(\d+)", f):
             if int(ref) != last:
-                problems.append(f"Dashboard B{row}: range stops at row {ref}, last task row is {last}")
+                problems.append(
+                    f"Dashboard B{row}: range stops at row {ref}, last task row is {last}"
+                )
     if dv["B11"].value != "balanced":
         problems.append(f"Dashboard: status reconciliation reads {dv['B11'].value!r}")
     if dv["B5"].value != len(tasks):
@@ -91,7 +105,9 @@ def check(path: Path) -> list[str]:
             continue
         st = ms.cell(r, 4).value
         if st not in MILESTONE_WORDS:
-            problems.append(f"Milestones {ms.cell(r,1).value}: status {st!r} not in {sorted(MILESTONE_WORDS)}")
+            problems.append(
+                f"Milestones {ms.cell(r,1).value}: status {st!r} not in {sorted(MILESTONE_WORDS)}"
+            )
 
     # ---- Risk Register: a risk must not cite a task that does not exist
     for r in range(4, rr.max_row + 1):
@@ -100,7 +116,9 @@ def check(path: Path) -> list[str]:
             continue
         if rr.cell(r, 7).value not in {"Open", "Mitigated", "Realised", "Closed"}:
             problems.append(f"Risk {rid}: status {rr.cell(r,7).value!r}")
-        for cited in re.findall(r"\b(T\d{3}[a-z]?|D\d{2}|B\d{2})\b", str(rr.cell(r, 6).value or "")):
+        for cited in re.findall(
+            r"\b(T\d{3}[a-z]?|D\d{2}|B\d{2})\b", str(rr.cell(r, 6).value or "")
+        ):
             if cited not in tasks:
                 problems.append(f"Risk {rid}: cites unknown task {cited}")
 
@@ -117,7 +135,9 @@ def check(path: Path) -> list[str]:
         problems.append("Change Log: entries are not in date order")
 
     # ---- How to use must mention the sheets it claims to explain
-    text = " ".join(str(hu.cell(r, c).value or "") for r in range(1, hu.max_row + 1) for c in (1, 2))
+    text = " ".join(
+        str(hu.cell(r, c).value or "") for r in range(1, hu.max_row + 1) for c in (1, 2)
+    )
     for word in ("Status", "Optional", "Change Log"):
         if word not in text:
             problems.append(f"How to use: no mention of {word}")

@@ -4,10 +4,11 @@ install:
 	pip install -r requirements-dev.txt && pip install -e . && pre-commit install
 
 test:
-	pytest -q
+	pytest -q --cov=terraguard --cov-report=term-missing
 
 lint:
-	ruff check terraguard scripts tests && black --check terraguard scripts tests
+	# same paths CI uses - scripts included, which is what caught run #7
+	ruff check terraguard scripts tests && black --check --diff terraguard scripts tests
 
 fmt:
 	black terraguard scripts tests && ruff check --fix terraguard scripts tests
