@@ -1,0 +1,28 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.11.0",
+  "resource_drift": [
+    {
+      "address": "aws_iam_role.baseline",
+      "mode": "managed", "type": "aws_iam_role", "name": "baseline",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": { "tags": { "TerraGuardRole": "drift-target" } },
+        "after": { "tags": { "TerraGuardRole": "drift-target-renamed" } },
+        "before_sensitive": {}, "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_cloudtrail.baseline",
+      "mode": "managed", "type": "aws_cloudtrail", "name": "baseline",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": { "tags": { "Owner": "research" } },
+        "after": { "tags": { "Owner": "research-team" } },
+        "before_sensitive": {}, "after_sensitive": {}
+      }
+    }
+  ]
+}

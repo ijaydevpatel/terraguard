@@ -71,6 +71,17 @@ FIXTURES = {
     "BK-001": "bk_001_local_backend",
     "CLEAN-002": "clean_002_workflow",
     "CLEAN-001": "clean",
+    "BK-002": "bk_002_deprecated_lock",
+    "BK-003": "bk_003_no_locking",
+    "WF-002": "wf_002_write_all",
+    "WF-003": "wf_003_no_permissions",
+}
+
+# Offline drift scenarios run from a committed plan JSON instead of a fixture directory.
+PLAN_FIXTURES = {
+    "TAG-002": "tests/fixtures/plan_tag_only_drift.json",
+    "TAG-003": "tests/fixtures/plan_description_drift.json",
+    "TAG-004": "tests/fixtures/plan_multi_tag_drift.json",
 }
 
 
@@ -118,9 +129,11 @@ def run(scenario_id: str, *, plan_json: Path | None, run_id: str, dry_run: bool)
     started = datetime.now(UTC)
     clock = time.perf_counter()
 
+    if plan_json is None and scenario_id in PLAN_FIXTURES:
+        plan_json = ROOT / PLAN_FIXTURES[scenario_id]
     if plan_json:
         findings, sources = collect_plan(plan_json, scenario_id)
-        fixture = plan_json.name
+        fixture = Path(plan_json).name
     else:
         name = FIXTURES.get(scenario_id)
         if not name:

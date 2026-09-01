@@ -1,0 +1,19 @@
+# Ground truth for BK-003. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: BK-003
+scenario_group: state_security
+tier: core
+resource_type: terraform_backend
+injected_change: remote and encrypted backend with no locking configured
+expected_drift: false
+expected_attribute: backend.use_lockfile
+expected_policy_status: non_compliant
+expected_control: TG-P04
+expected_normalised_event: insecure_state_handling
+expected_severity_band: medium
+expected_evidence_source: backend_config
+needs_aws: false
+planned_variations: 5
+restore: not applicable - offline fixture
+notes: >
+  Added at the W7 rebalance. The severity band here is scenario level; the training label
+  is per finding and comes from severity_rules.py.

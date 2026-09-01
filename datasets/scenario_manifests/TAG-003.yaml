@@ -1,0 +1,20 @@
+# Ground truth for TAG-003. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: TAG-003
+scenario_group: infrastructure_drift
+tier: core
+resource_type: aws_vpc_security_group_ingress_rule
+injected_change: rule description reworded, CIDR unchanged (offline plan JSON fixture)
+expected_drift: true
+expected_attribute: description
+expected_policy_status: compliant
+expected_control: ""
+expected_normalised_event: non_security_operational_drift
+expected_severity_band: non_security_or_low
+expected_evidence_source: terraform_plan_json
+needs_aws: false
+planned_variations: 5
+restore: not applicable - offline fixture
+notes: >
+  Added at the W7 rebalance. Clean controls produce no findings, so they measure false
+  alerts but contribute nothing to training; the non-security class needs scenarios that
+  produce a finding which the rules then classify as non-security.

@@ -1,0 +1,19 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.11.0",
+  "resource_drift": [
+    {
+      "address": "aws_s3_bucket.test",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "test",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": { "tags": { "Owner": "research", "Name": "terraguard-test" } },
+        "after": { "tags": { "Owner": "research-team", "Name": "terraguard-test" } },
+        "before_sensitive": {}, "after_sensitive": {}
+      }
+    }
+  ]
+}

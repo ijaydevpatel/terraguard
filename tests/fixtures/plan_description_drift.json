@@ -1,0 +1,17 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.11.0",
+  "resource_drift": [
+    {
+      "address": "aws_vpc_security_group_ingress_rule.ssh_restricted",
+      "mode": "managed", "type": "aws_vpc_security_group_ingress_rule", "name": "ssh_restricted",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": { "description": "SSH from the administrative CIDR only", "cidr_ipv4": "10.0.0.0/8" },
+        "after": { "description": "SSH from the admin range", "cidr_ipv4": "10.0.0.0/8" },
+        "before_sensitive": {}, "after_sensitive": {}
+      }
+    }
+  ]
+}

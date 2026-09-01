@@ -14,3 +14,10 @@ CLEAN-001,clean_control,baseline,no change - secure baseline left untouched,Fals
 SG-003,infrastructure_drift,aws_vpc_security_group_ingress_rule,unrestricted IPv6 ingress (::/0),True,cidr_ipv6,non_compliant,TG-P10,restricted_to_public_network_access,high_or_critical,terraform_plan_json,optional,True,3
 ST-002,state_security,repository_file,state backup file committed,False,terraform.tfstate.backup,non_compliant,TG-P01,insecure_state_handling,high_or_critical,repository,optional,False,3
 CLEAN-002,clean_control,github_workflow,"least-privilege workflow, no artefacts",False,,compliant,,,non_security_or_low,workflow,optional,False,3
+BK-002,state_security,terraform_backend,backend still uses the deprecated dynamodb_table lock,False,backend.dynamodb_table,non_compliant,TG-P04,insecure_state_handling,medium,backend_config,core,False,5
+BK-003,state_security,terraform_backend,remote and encrypted backend with no locking configured,False,backend.use_lockfile,non_compliant,TG-P04,insecure_state_handling,medium,backend_config,core,False,5
+WF-002,state_security,github_workflow,"workflow token set to write-all, no artefacts published",False,permissions,non_compliant,TG-P08,privilege_expansion,medium,workflow,core,False,5
+WF-003,state_security,github_workflow,workflow omits the permissions block entirely,False,permissions,non_compliant,TG-P08,privilege_expansion,medium,workflow,core,False,5
+TAG-002,infrastructure_drift,aws_s3_bucket,"tag values changed, nothing else (offline plan JSON fixture)",True,tags.Owner,compliant,,non_security_operational_drift,non_security_or_low,terraform_plan_json,core,False,6
+TAG-003,infrastructure_drift,aws_vpc_security_group_ingress_rule,"rule description reworded, CIDR unchanged (offline plan JSON fixture)",True,description,compliant,,non_security_operational_drift,non_security_or_low,terraform_plan_json,core,False,5
+TAG-004,infrastructure_drift,aws_iam_role,tag values changed on two resources at once (offline plan JSON fixture),True,tags,compliant,,non_security_operational_drift,non_security_or_low,terraform_plan_json,core,False,5

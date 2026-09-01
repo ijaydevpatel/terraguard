@@ -17,14 +17,35 @@ def rows() -> list[dict]:
         return list(csv.DictReader(fh))
 
 
-def test_catalogue_has_ten_to_twelve_core_templates():
+def test_catalogue_has_enough_core_templates_to_train_on():
+    """The W7 rebalance raised the ceiling from 12.
+
+    The reduced scope set 10-12 templates on an hours argument. The class audit showed that
+    12 left one class with a single independent group at finding level, which cannot be
+    split at all. The seven templates added are offline fixtures costing no AWS time, so the
+    hours argument that justified the 12 ceiling does not apply to them.
+    """
     core = [r for r in rows() if r["tier"] == "core"]
-    assert 10 <= len(core) <= 12
+    assert 10 <= len(core) <= 20
 
 
 def test_planned_core_observations_are_in_the_sixty_to_hundred_band():
     core = sum(int(r["planned_variations"]) for r in rows() if r["tier"] == "core")
     assert 60 <= core <= 100, core
+
+
+def test_every_severity_class_has_at_least_three_independent_templates():
+    """Group-aware CV splits on templates, not rows.
+
+    A class with two templates cannot be split three ways, so more runs of the same scenario
+    would not help. This is the check the class audit should have been from the start.
+    """
+    from collections import Counter
+
+    counts = Counter(r["expected_severity_band"] for r in rows() if r["tier"] == "core")
+    assert set(counts) == {"high_or_critical", "medium", "non_security_or_low"}, counts
+    for band, n in counts.items():
+        assert n >= 3, f"{band} has only {n} template(s); group-aware CV needs at least 3"
 
 
 def test_every_scenario_has_a_manifest_and_no_manifest_is_orphaned():

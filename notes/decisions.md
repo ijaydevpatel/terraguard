@@ -183,3 +183,29 @@ Evidence: `datasets/findings.csv`, run of `severity_rules.classify` over the pil
 earned.** A run-level summary is not the training label - the training label is per finding.
 The column is kept because it makes a run scannable by eye, and the per-finding labels are
 derived from `findings.csv` at training time.
+
+---
+
+## 2026-08-22 — W7 catalogue rebalance
+
+**Clean controls measure false alerts but contribute nothing to training.**
+This is what the first rebalance attempt missed. CLEAN-001 and CLEAN-002 produce zero
+findings by design, so they generate no rows to label. The non-security class needs
+scenarios that produce a finding which the rules then classify as non-security - tag and
+description drift - not scenarios that produce nothing.
+Evidence: after adding four medium templates the non-security class still had one group;
+adding TAG-002/003/004 took it to three.
+
+**The 10-12 template ceiling was raised to 19.**
+Alternative: keep the ceiling and accept an untrainable dataset. Rejected. The ceiling came
+from an hours argument during the 100-hour rescope, and the seven templates added are all
+offline fixtures - a committed backend.tf, workflow YAML or plan JSON - costing no AWS time
+and no experiment wall-clock. The hours argument does not apply to them. Core observations
+are 97, still inside the 60-100 band.
+Evidence: `datasets/scenario_catalogue.csv`, `test_catalogue_has_enough_core_templates_to_train_on`.
+
+**Group counts are now asserted by a test rather than audited by hand.**
+`test_every_severity_class_has_at_least_three_independent_templates` fails the build if any
+class drops below three templates. The class audit found this problem twice by hand, on two
+different units of analysis, and got the unit wrong the first time.
+Evidence: `tests/test_scenario_catalogue.py`.

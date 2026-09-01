@@ -1,0 +1,19 @@
+# Ground truth for WF-002. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: WF-002
+scenario_group: state_security
+tier: core
+resource_type: github_workflow
+injected_change: workflow token set to write-all, no artefacts published
+expected_drift: false
+expected_attribute: permissions
+expected_policy_status: non_compliant
+expected_control: TG-P08
+expected_normalised_event: privilege_expansion
+expected_severity_band: medium
+expected_evidence_source: workflow
+needs_aws: false
+planned_variations: 5
+restore: not applicable - offline fixture
+notes: >
+  Added at the W7 rebalance. The severity band here is scenario level; the training label
+  is per finding and comes from severity_rules.py.

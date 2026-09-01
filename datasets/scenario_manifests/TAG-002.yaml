@@ -1,0 +1,19 @@
+# Ground truth for TAG-002. Written BEFORE any run - a record with no prior manifest is invalid.
+scenario_id: TAG-002
+scenario_group: infrastructure_drift
+tier: core
+resource_type: aws_s3_bucket
+injected_change: tag values changed, nothing else (offline plan JSON fixture)
+expected_drift: true
+expected_attribute: tags.Owner
+expected_policy_status: compliant
+expected_control: ""
+expected_normalised_event: non_security_operational_drift
+expected_severity_band: non_security_or_low
+expected_evidence_source: terraform_plan_json
+needs_aws: false
+planned_variations: 6
+restore: not applicable - offline fixture
+notes: >
+  Added at the W7 rebalance. The severity band here is scenario level; the training label
+  is per finding and comes from severity_rules.py.
