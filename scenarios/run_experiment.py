@@ -31,6 +31,7 @@ from terraguard.drift_normaliser import normalise  # noqa: E402
 from terraguard.models import UTC, EvidenceSource, PolicyStatus  # noqa: E402
 from terraguard.policy_engine import assess, assessment_coverage, load_controls  # noqa: E402
 from terraguard.repository_scanner import scan_paths  # noqa: E402
+from terraguard.severity_rules import classify_all  # noqa: E402
 from terraguard.workflow_scanner import scan_workflows  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,6 +137,11 @@ def run(scenario_id: str, *, plan_json: Path | None, run_id: str, dry_run: bool)
     elapsed_ms = (time.perf_counter() - clock) * 1000
 
     non_compliant = [r for r in results if r.status is PolicyStatus.NON_COMPLIANT]
+
+    # Deterministic severity for the run is the worst band any finding earned.
+    labels = classify_all(findings)
+    rank = {"non_security_or_low": 0, "medium": 1, "high_or_critical": 2}
+    worst = max((x.band for x in labels), key=lambda b: rank[b], default="")
     detected = bool(findings)
     expected_drift = bool(manifest.get("expected_drift"))
     expected_status = manifest.get("expected_policy_status")
@@ -162,7 +168,7 @@ def run(scenario_id: str, *, plan_json: Path | None, run_id: str, dry_run: bool)
         "expected_policy_status": expected_status,
         "actual_policy_status": actual_status,
         "expected_severity_band": manifest.get("expected_severity_band"),
-        "deterministic_severity": "",  # filled in Phase 6, severity_rules.py
+        "deterministic_severity": worst,
         "findings_count": len(findings),
         "controls_assessed": len(results),
         "assessment_coverage": round(assessment_coverage(results), 3),

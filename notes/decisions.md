@@ -153,3 +153,33 @@ The `deterministic_severity` column exists but is empty until Phase 6 fills it. 
 column now means populating it later is not a schema change. Final labels need the rubric in
 `docs/SEVERITY_RUBRIC.md` and a review sample from someone other than the author (T112);
 until then the column carries no weight.
+
+---
+
+## 2026-08-22 — deterministic baseline, and a correction to the class audit
+
+**The deterministic severity table is frozen before any model is trained.**
+Alternative: tune the rules after seeing model results. Rejected because the table is the
+comparator: if Logistic Regression and Random Forest cannot beat a lookup table, that is
+only reportable if the table was fixed first. Every label carries the rule number that
+produced it, so a reviewer can disagree with a rule rather than with an impression.
+Evidence: `terraguard/severity_rules.py`, `tests/test_severity_rules.py`.
+
+**Correction: the medium class is not empty. The class audit measured the wrong unit.**
+The audit on 21 Aug read `expected_severity_band` from the scenario catalogue and concluded
+that no scenario produces a medium finding. That column is a scenario-level summary, but the
+models predict severity **per finding**, and one scenario can produce findings in different
+bands. Running the frozen rules over the pilot's 16 findings gives 14 high-or-critical and
+2 medium - the medium pair being the TG-P08 token-scope findings from WF-001, which fall on
+rule 4.
+
+The conclusion changes but the problem does not. At finding level the independent groups are
+still four templates for high-or-critical and one for medium, which is not enough to split.
+The rebalance in W7 is still needed; what changed is that it must be specified in terms of
+findings per template, not scenarios per band.
+Evidence: `datasets/findings.csv`, run of `severity_rules.classify` over the pilot.
+
+**`deterministic_severity` in observations.csv is the worst band any finding in that run
+earned.** A run-level summary is not the training label - the training label is per finding.
+The column is kept because it makes a run scannable by eye, and the per-finding labels are
+derived from `findings.csv` at training time.
