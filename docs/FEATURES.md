@@ -145,12 +145,12 @@ the clean controls.
 
 ## 6. Severity prioritisation
 
-Answers RQ2. **This is the part that is not built yet.**
+Answers RQ2. The comparator is built and frozen; the models are not.
 
 | Capability | Module | Status |
 |---|---|---|
 | Written labelling rubric, three classes, five-rule ladder | `docs/SEVERITY_RUBRIC.md` | built |
-| Deterministic severity table (the non-AI comparator) | `severity_rules.py` | **not built** |
+| Deterministic severity table (the non-AI comparator) | `severity_rules.py` | built |
 | Feature encoding | `feature_builder.py` | **not built** |
 | Logistic Regression | `model_trainer.py` | **not built** |
 | Random Forest | `model_trainer.py` | **not built** |
@@ -159,6 +159,11 @@ Answers RQ2. **This is the part that is not built yet.**
 
 The models rank findings that deterministic logic has already established. They never decide
 whether drift exists or whether a control was violated.
+
+`severity_rules.py` was frozen before any model is trained, and every label it returns carries
+the number of the rule that produced it. If Logistic Regression and Random Forest cannot beat a
+lookup table, that is a reportable result rather than an awkward one - but only because the
+table was fixed first.
 
 ---
 
@@ -171,7 +176,7 @@ Answers RQ1 and RQ4.
 | Run Terraform init / validate / `plan -refresh-only` / `show -json` | built |
 | Offline path from an existing plan JSON, no credentials needed | built |
 | Repository, workflow and backend evidence capture | built |
-| 12 core scenario templates with ground-truth manifests written before any run | built |
+| 19 core scenario templates with ground-truth manifests written before any run | built |
 | Seven out-of-band injection scripts with baseline pre-flight checks | fixture-only |
 | Baseline restore with a zero-drift confirmation | fixture-only |
 | Experiment harness writing `observations.csv` and `findings.csv` | built |
@@ -200,10 +205,17 @@ regulatory certification. Web dashboard. These are stated exclusions in §1.4, n
 
 ---
 
-## Honest status, 11 August 2026
+## Honest status, 2 September 2026
 
-Detection and policy assessment are built and tested. Severity prioritisation and reporting
-are not. Every drift capability has been exercised against fixtures only, because the AWS
-account does not exist yet — so the drift half of RQ1 is currently supported by synthetic
-evidence alone. That is the single largest gap between what this document claims and what has
-been demonstrated.
+Detection, policy assessment and the deterministic severity baseline are built and tested.
+The models and the reporting layer are not.
+
+The dataset is now trainable, but only on its offline half. 26 observations and 32 findings
+have been collected across 13 templates, and every severity class has at least three
+independent scenario groups, so a group-aware cross-validation is feasible. The nine AWS drift
+templates have produced nothing at all, because the baseline has never been deployed.
+
+That is still the single largest gap between what this document claims and what has been
+demonstrated. Infrastructure drift is the project's headline claim, and every drift capability
+listed above has been exercised against fixtures only. Until T021 puts the baseline into a real
+account, the drift half of RQ1 rests on synthetic evidence.
