@@ -94,10 +94,27 @@ def check(path: Path) -> list[str]:
                 problems.append(
                     f"Dashboard B{row}: range stops at row {ref}, last task row is {last}"
                 )
-    if dv["B11"].value != "balanced":
-        problems.append(f"Dashboard: status reconciliation reads {dv['B11'].value!r}")
-    if dv["B5"].value != len(tasks):
-        problems.append(f"Dashboard: total tasks {dv['B5'].value} but {len(tasks)} task rows")
+    # Reconcile from the Task Tracker itself rather than from the Dashboard's cached values.
+    # openpyxl drops cached formula results whenever it writes the file, so anything read out
+    # of `dv` is None until Excel has opened the workbook again. Checking the underlying facts
+    # is both independent of that and a stronger test: it verifies the numbers the formulas are
+    # supposed to produce, instead of trusting Excel's last memo of them.
+    counted = {word: 0 for word in STATUS_WORDS}
+    for t in tasks.values():
+        if t["status"] in counted:
+            counted[t["status"]] += 1
+    if sum(counted.values()) != len(tasks):
+        problems.append(
+            f"Task Tracker: statuses sum to {sum(counted.values())} but there are "
+            f"{len(tasks)} task rows"
+        )
+
+    # If Excel has been here since the last write, the cached values must agree with the facts.
+    cached_total, cached_balance = dv["B5"].value, dv["B11"].value
+    if cached_total is not None and cached_total != len(tasks):
+        problems.append(f"Dashboard: cached total {cached_total} but {len(tasks)} task rows")
+    if cached_balance is not None and cached_balance != "balanced":
+        problems.append(f"Dashboard: status reconciliation reads {cached_balance!r}")
 
     # ---- Milestones
     for r in range(4, ms.max_row + 1):

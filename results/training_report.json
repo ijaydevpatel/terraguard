@@ -1,0 +1,219 @@
+{
+  "n_findings": 32,
+  "n_groups": 11,
+  "n_splits": 3,
+  "class_support": {
+    "high_or_critical": 14,
+    "medium": 10,
+    "non_security_or_low": 8
+  },
+  "groups_per_class": {
+    "high_or_critical": 4,
+    "medium": 5,
+    "non_security_or_low": 3
+  },
+  "labels": [
+    "high_or_critical",
+    "medium",
+    "non_security_or_low"
+  ],
+  "scores": [
+    {
+      "name": "deterministic_rules",
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "accuracy": 1.0,
+      "per_class": {
+        "high_or_critical": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 14
+        },
+        "medium": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 10
+        },
+        "non_security_or_low": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 8
+        }
+      },
+      "confusion": [
+        [
+          14,
+          0,
+          0
+        ],
+        [
+          0,
+          10,
+          0
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "high_risk_recall": 1.0,
+      "note": "DEFINITIONAL, not a result. The labels are this function's own output, so a score of 1.0 is arithmetic rather than evidence. It is listed to make the circularity visible, and must not be read as the baseline beating the models."
+    },
+    {
+      "name": "logistic_regression",
+      "macro_f1": 0.5687,
+      "weighted_f1": 0.5387,
+      "accuracy": 0.5625,
+      "per_class": {
+        "high_or_critical": {
+          "precision": 1.0,
+          "recall": 0.2857,
+          "f1": 0.4444,
+          "support": 14
+        },
+        "medium": {
+          "precision": 0.375,
+          "recall": 0.6,
+          "f1": 0.4615,
+          "support": 10
+        },
+        "non_security_or_low": {
+          "precision": 0.6667,
+          "recall": 1.0,
+          "f1": 0.8,
+          "support": 8
+        }
+      },
+      "confusion": [
+        [
+          4,
+          10,
+          0
+        ],
+        [
+          0,
+          6,
+          4
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "high_risk_recall": 0.2857,
+      "note": "3/3 folds usable, grouped by scenario template"
+    },
+    {
+      "name": "random_forest",
+      "macro_f1": 0.7714,
+      "weighted_f1": 0.7357,
+      "accuracy": 0.75,
+      "per_class": {
+        "high_or_critical": {
+          "precision": 1.0,
+          "recall": 0.4286,
+          "f1": 0.6,
+          "support": 14
+        },
+        "medium": {
+          "precision": 0.5556,
+          "recall": 1.0,
+          "f1": 0.7143,
+          "support": 10
+        },
+        "non_security_or_low": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 8
+        }
+      },
+      "confusion": [
+        [
+          6,
+          8,
+          0
+        ],
+        [
+          0,
+          10,
+          0
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "high_risk_recall": 0.4286,
+      "note": "3/3 folds usable, grouped by scenario template"
+    }
+  ],
+  "leakage": {
+    "macro_f1": 0.5687,
+    "accuracy": 0.5625,
+    "folds_used": 3,
+    "interpretation": "Measured under the same grouped folds. Compare against the ungrouped figure: if grouping alone suppresses the leak, that is because control ids are template-specific, so a held-out template contributes categories the model never saw in training."
+  },
+  "coefficients": {
+    "high_or_critical": {
+      "path_mentions_permission": -0.7956,
+      "assessment_coverage": -0.4071,
+      "evidence_source=repository": 0.3979,
+      "is_state_artefact": 0.3979,
+      "findings_in_run": 0.3089,
+      "resource_type=repository_file": 0.2995,
+      "evidence_source=terraform_plan_json": -0.2993,
+      "persistence_across_runs": 0.235,
+      "resource_type=aws_iam_role": -0.1203,
+      "path_mentions_logging": 0.0937
+    },
+    "medium": {
+      "assessment_coverage": 0.7526,
+      "path_mentions_permission": 0.5904,
+      "findings_in_run": -0.5741,
+      "persistence_across_runs": 0.4921,
+      "evidence_source=backend_config": 0.4523,
+      "evidence_source=repository": -0.3172,
+      "is_state_artefact": -0.3172,
+      "attribute_depth": 0.2246,
+      "evidence_source=terraform_plan_json": -0.1683,
+      "resource_type=repository_file": 0.1682
+    },
+    "non_security_or_low": {
+      "persistence_across_runs": -0.7271,
+      "resource_type=repository_file": -0.4677,
+      "evidence_source=terraform_plan_json": 0.4676,
+      "evidence_source=backend_config": -0.3648,
+      "assessment_coverage": -0.3456,
+      "attribute_depth": -0.2912,
+      "findings_in_run": 0.2652,
+      "resource_type=aws_iam_role": 0.2206,
+      "path_mentions_permission": 0.2052,
+      "detail_length": -0.1469
+    }
+  },
+  "importances": {
+    "assessment_coverage": 0.2111,
+    "detail_length": 0.1748,
+    "resource_type=repository_file": 0.1206,
+    "evidence_source=terraform_plan_json": 0.1185,
+    "persistence_across_runs": 0.0716,
+    "path_mentions_permission": 0.0679,
+    "findings_in_run": 0.0481,
+    "evidence_source=workflow": 0.0343,
+    "attribute_depth": 0.0343,
+    "evidence_source=backend_config": 0.0316,
+    "is_state_artefact": 0.0201,
+    "evidence_source=repository": 0.0193,
+    "resource_type=aws_iam_role": 0.0111,
+    "path_mentions_logging": 0.0104,
+    "path_mentions_public": 0.008
+  },
+  "warnings": []
+}

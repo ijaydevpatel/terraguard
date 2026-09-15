@@ -1,0 +1,8 @@
+{
+  "findings": 32,
+  "observations": 26,
+  "duplicate_id_pairs": 2,
+  "orphan_runs": [],
+  "blank_required_fields": {},
+  "note": "Duplicate id pairs are a known defect (T124), not a data-entry error: finding_id is path plus control id, so one file breaking one control twice collides. They are reported rather than deduplicated because both rows are real findings."
+}

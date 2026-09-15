@@ -1,0 +1,12 @@
+[
+  {
+    "run_id": "WF-001-2d0885c3",
+    "finding_id": "workflow:/sessions/pensive-exciting-mendel/mnt/Terragaurd/terraguard-ai/terraform/fixtures/wf_001_plan_artefact/.github/workflows/plan.yml:TG-P07",
+    "count": 2
+  },
+  {
+    "run_id": "WF-001-14d5d6a9",
+    "finding_id": "workflow:/sessions/pensive-exciting-mendel/mnt/Terragaurd/terraguard-ai/terraform/fixtures/wf_001_plan_artefact/.github/workflows/plan.yml:TG-P07",
+    "count": 2
+  }
+]

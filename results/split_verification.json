@@ -1,0 +1,17 @@
+{
+  "splits": 3,
+  "folds": [
+    {
+      "fold": 0,
+      "shared_templates": []
+    },
+    {
+      "fold": 1,
+      "shared_templates": []
+    },
+    {
+      "fold": 2,
+      "shared_templates": []
+    }
+  ]
+}

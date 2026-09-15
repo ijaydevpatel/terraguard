@@ -24,6 +24,9 @@ line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint]
+# str+Enum is deliberate: these are serialised straight into
+# CSV, and StrEnum changes what str() returns.
+extend-ignore = ["UP042"]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["E501"]
 

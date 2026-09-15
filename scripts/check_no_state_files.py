@@ -4,6 +4,7 @@
 TG-P01 is the control this hook enforces at source. It is deliberately blunt:
 a false positive costs one --no-verify argument, a false negative costs a leak.
 """
+
 from __future__ import annotations
 
 import re

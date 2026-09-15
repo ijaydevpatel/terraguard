@@ -209,3 +209,46 @@ Evidence: `datasets/scenario_catalogue.csv`, `test_catalogue_has_enough_core_tem
 class drops below three templates. The class audit found this problem twice by hand, on two
 different units of analysis, and got the unit wrong the first time.
 Evidence: `tests/test_scenario_catalogue.py`.
+
+---
+
+## 2026-09-16 — W8/W9 models, and what the comparison can claim
+
+**The deterministic baseline was removed from the comparison table.**
+Alternative: report it at 1.0 alongside the models. Rejected because the labels are the
+baseline's own output, so 1.0 is arithmetic rather than evidence, and a reader scanning the
+table would take it as the baseline beating the models. While the labels come from one of the
+contestants the comparison cannot rank them at all. The row is described in prose with its
+reason instead. A rules-versus-models claim needs labels from outside the rules, which is
+T112 and T113, and neither is arranged — so the RQ2 answer stays open.
+Evidence: `results/model_comparison.md`, `notes/results_D05_severity_models.md`.
+
+**Grouping, not feature exclusion, is what defeats the control-id leak.**
+The leakage check was run four ways. Under grouped folds, adding `control_id` and
+`normalised_event` changes macro F1 by nothing (0.5687 either way). Under a random split the
+same fields lift it from 0.7186 to 0.9259. Control ids are almost perfectly confounded with
+scenario templates, so a held-out template contributes a category the model has never seen.
+The feature exclusion is kept because it protects against a future catalogue where several
+templates share a control id, but the write-up must not claim the exclusion did work the
+split was actually doing.
+Evidence: `results/leakage_matrix.json`.
+
+**The same check also priced the honest split.** Without any rule inputs, ungrouped scoring
+reaches 0.7186 against 0.5687 grouped. A random split would have inflated every figure in the
+results chapter by roughly fifteen points.
+
+**Run-level features are being treated as suspect.**
+`assessment_coverage` (0.21) and `detail_length` (0.17) are the two strongest Random Forest
+importances, and neither is a security property. Coverage is a property of the run and partly
+encodes which scenario family produced the finding; detail length is close to a fingerprint of
+a scanner's message template. Not leakage — both are available at prediction time — but a
+model leaning on them may generalise badly to a catalogue it was not trained on. Re-running
+without run-level features is the next test.
+
+**`finding_id` is not unique, and the duplicates are not being deduplicated.**
+The id is built from file path plus control id, so a workflow violating TG-P07 twice — once by
+uploading a plan artefact, once by writing state paths to the Actions cache — produces two
+genuinely different findings on one id. This inflates `persistence_across_runs` for the
+affected rows. Recorded as a defect (T124) rather than dropped, because discarding either row
+would discard a real finding.
+Evidence: `results/duplicate_audit.json`.

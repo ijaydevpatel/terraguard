@@ -1,0 +1,22 @@
+{
+  "captured": "2026-09-16",
+  "random_state": 20260916,
+  "python": "3.14.3",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "sklearn": "1.9.1",
+    "numpy": "2.4.3",
+    "scipy": "1.18.1",
+    "pydantic": "2.12.5",
+    "openpyxl": "3.1.5"
+  },
+  "terraform": "terraform not on PATH",
+  "git_commit": "c671b24d156c746437f52739afaece3ecd541e95",
+  "aws_region": "ap-southeast-2",
+  "environment": "test",
+  "dataset": {
+    "findings": 32,
+    "observations": 26
+  },
+  "note": "The AWS drift scenarios have never run, so no provider version is recorded. This capture covers the offline half of the experiment only."
+}
