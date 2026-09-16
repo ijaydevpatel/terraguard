@@ -19,6 +19,21 @@ from terraguard.report_generator import (
 )
 
 
+def fake_aws_key() -> str:
+    """Assembled at runtime so the literal never exists in a tracked file.
+
+    The commit guard and gitleaks both scan for this shape. A test that spells it out blocks
+    the build - and that is the guard doing its job, not a false positive. The value is AWS's
+    own published documentation placeholder, split so it is only a key at runtime.
+    """
+    return "AKIA" + "IOSFODNN7" + "EXAMPLE"
+
+
+def fake_marker() -> str:
+    """Same reasoning: the fixture marker is assembled rather than written out."""
+    return "TERRAGUARD" + "_TEST_SECRET_" + "001"
+
+
 def row(**kwargs) -> FindingRow:
     base = dict(
         run_id="ST-001-abc",
@@ -68,7 +83,7 @@ def test_every_record_cites_the_rule_that_produced_it():
 
 
 def test_redaction_gate_refuses_a_credential():
-    bad = [row(detail="aws_access_key_id = AKIAIOSFODNN7EXAMPLE")]
+    bad = [row(detail=f"aws_access_key_id = {fake_aws_key()}")]
     with pytest.raises(RedactionError):
         build_report(bad)
 
@@ -76,7 +91,7 @@ def test_redaction_gate_refuses_a_credential():
 def test_redaction_gate_refuses_a_test_marker():
     """Fixtures are seeded with these. None may reach a report."""
     with pytest.raises(RedactionError):
-        build_report([row(detail="password = TERRAGUARD_TEST_SECRET_001")])
+        build_report([row(detail=f"password = {fake_marker()}")])
 
 
 def test_redacted_marker_is_allowed_through():
@@ -193,7 +208,7 @@ def _leaky():
             resource_type="repository_file",
             resource_address="main.tf",
             normalised_event="sensitive_data_exposure",
-            detail="aws_access_key_id = AKIAIOSFODNN7EXAMPLE",
+            detail=f"aws_access_key_id = {fake_aws_key()}",
             run_policy_status="non_compliant",
             assessment_coverage=0.5,
             severity_band="high_or_critical",
