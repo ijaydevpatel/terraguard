@@ -1,0 +1,110 @@
+name: terraguard
+
+# The tool run against this repository, as a gate rather than as a report nobody reads.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege. id-token is needed only for the optional OIDC job below; the scan itself
+# reads the repository and nothing else.
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: state and secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: the scanner searches past commits, because deleting a state file in
+          # a later commit does not remove it from the repository.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      # Critical and high fail the build. Medium warns. A control that could not be assessed
+      # warns rather than passing, because missing evidence is not compliance.
+      - name: Severity gate
+        run: terraguard scan . --include-optional --fail-on high
+
+      - name: Machine readable report
+        if: always()
+        run: terraguard scan . --include-optional --format json --output terraguard-report.json
+
+      # The report is sanitised by assert_clean before it is written, so this upload cannot
+      # carry a credential. It is the one artefact the workflow produces.
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraguard-report
+          path: terraguard-report.json
+          retention-days: 7
+
+      - name: Prove the leak guard still works
+        run: python scripts/demo_leak_prevention.py
+
+      # Nothing sensitive should survive the job, even on failure.
+      - name: Clean temporary evidence
+        if: always()
+        run: rm -rf evidence .terraguard_tmp corpus
+
+  drift:
+    name: drift detection against AWS
+    runs-on: ubuntu-latest
+    # Only runs when the account is configured. Without the role it is skipped rather than
+    # failing, so a fork or a clean checkout still gets a green pipeline.
+    if: vars.AWS_ROLE_ARN != ''
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.0"
+
+      # Short-lived credentials from OIDC. No long-lived keys are stored in this repository,
+      # which is the control the tool checks for in other people's workflows.
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ap-southeast-2
+
+      - name: Refresh-only plan
+        working-directory: terraform/baseline
+        run: |
+          terraform init -input=false
+          terraform plan -refresh-only -input=false -out=drift.tfplan
+          terraform show -json drift.tfplan > "${GITHUB_WORKSPACE}/drift.json"
+
+      - name: Assess drift
+        run: terraguard analyse --plan-json drift.json --include-optional --fail-on high
+
+      # The binary plan and the raw JSON hold every resource attribute in cleartext. They are
+      # removed whether the step above passed or failed.
+      - name: Remove the plan and its JSON
+        if: always()
+        run: rm -f drift.json terraform/baseline/drift.tfplan

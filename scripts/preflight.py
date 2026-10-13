@@ -23,14 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Demonstrate that a real credential is caught and the commit blocked
+COMMIT_MESSAGE = """Gate the repository with the tool and generate the evidence set
 
-A detection count over generated scenarios shows internal consistency and nothing more, so it
-is not evidence the tool stops a leak. demo_leak_prevention.py plants an AWS key and a state
-file in a throwaway repository and checks four things: both are found and the gate fails, the
-report never reprints either value, the pre-commit guard stops the commit landing, and a
-cleaned repository commits and scans clean. A test runs it, so the claim is checked in CI
-rather than being a paragraph in the write-up."""
+The pipeline now runs the scanner against this repository on every push, with a second job for
+live drift that skips cleanly when no AWS role is configured. Figures, the control traceability
+table and the research question mapping are all generated from committed artefacts rather than
+written by hand, so none of them can drift from the numbers. The traceability table reports
+TG-P05 as having no run behind it, which is the honest state until the baseline is deployed."""
 
 
 def say(text: str = "") -> None:
