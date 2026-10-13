@@ -8,6 +8,7 @@ disk.
 from __future__ import annotations
 
 import ipaddress
+import re
 from typing import Any
 
 from .models import AttributeChange, ChangeAction, DriftRecord
@@ -48,6 +49,11 @@ def _is_open_cidr(value: str) -> bool:
     return net.prefixlen == 0
 
 
+_POLICY_WILDCARD = re.compile(
+    r'"(?:Action|Resource|Principal)"\s*:\s*(?:"\*"|\[[^]]*"\*"[^]]*\])', re.IGNORECASE
+)
+
+
 def categorise(path: str, value: Any) -> str:
     """Reduce a value to a small vocabulary the rest of the pipeline can reason about."""
     if value is None:
@@ -58,9 +64,18 @@ def categorise(path: str, value: Any) -> str:
     if isinstance(value, str):
         if "cidr" in lowered or lowered.endswith(("_ip", "ip_range")):
             return "public" if _is_open_cidr(value) else "restricted"
+        # An encryption or logging attribute emptied is that control removed, not a value
+        # change. Without this, turning encryption off read as value -> value and the
+        # normaliser saw nothing worth reporting.
+        if not value.strip():
+            return "absent"
         if value == "*":
             return "wildcard"
         if lowered.endswith(("action", "actions", "resource", "resources")) and value.endswith("*"):
+            return "wildcard"
+        # IAM policies arrive as a JSON string, so the wildcard is inside the document
+        # rather than being the whole value.
+        if _POLICY_WILDCARD.search(value):
             return "wildcard"
         if value.lower() in ("enabled", "true", "on"):
             return "enabled"

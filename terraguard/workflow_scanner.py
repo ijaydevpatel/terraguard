@@ -10,6 +10,7 @@ The checks map onto four controls:
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -25,11 +26,23 @@ _STATE_HINTS = ("tfstate", "tfplan", "plan.json", ".terraform")
 _LONG_LIVED = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
 
 
+def _slug(text: str) -> str:
+    """A short, stable discriminator taken from the detail.
+
+    One workflow can break one control in two different ways - uploading a plan artefact and
+    writing state paths to the cache are both TG-P07 - and keying the id on file plus control
+    alone made those collide. The collision inflated the persistence feature, because the
+    dataset counted one id twice per run.
+    """
+    words = re.findall(r"[a-z]{3,}", text.lower())[:4]
+    return "-".join(words) or "finding"
+
+
 def _finding(
     wf: str, control: str, event: NormalisedEvent, detail: str, remediation: str
 ) -> Finding:
     return Finding(
-        finding_id=f"workflow:{wf}:{control}",
+        finding_id=f"workflow:{wf}:{control}:{_slug(detail)}",
         evidence_source=EvidenceSource.WORKFLOW,
         resource_type="github_workflow",
         resource_address=wf,

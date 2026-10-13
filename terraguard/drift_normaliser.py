@@ -20,7 +20,17 @@ from .models import (
 __all__ = ["normalise_attribute", "normalise_record", "normalise", "NORMALISATION_TABLE"]
 
 # path fragment -> (event when the change is a security regression, description)
-_NETWORK_HINTS = ("cidr", "ipv4", "ipv6", "ip_range", "source_ranges")
+_NETWORK_HINTS = (
+    "cidr",
+    "ipv4",
+    "ipv6",
+    "ip_range",
+    "source_ranges",
+    "public_access",
+    "block_public",
+    "public_acl",
+    "publicly_accessible",
+)
 _ENCRYPTION_HINTS = ("encrypt", "sse", "kms", "server_side_encryption")
 _LOGGING_HINTS = ("logging", "log_file_validation", "enable_logging", "trail", "audit")
 _PRIVILEGE_HINTS = ("action", "actions", "policy", "principal", "assume_role", "resource")
@@ -53,15 +63,21 @@ def normalise_attribute(change: AttributeChange) -> NormalisedEvent | None:
     if _matches(path, _NETWORK_HINTS):
         if after == "public" and before != "public":
             return NormalisedEvent.PUBLIC_NETWORK_ACCESS
+        # A public-access block switched off exposes the bucket just as surely as an open
+        # CIDR does. It reads as enabled -> disabled rather than restricted -> public.
+        if before == "enabled" and after in ("disabled", "absent"):
+            return NormalisedEvent.PUBLIC_NETWORK_ACCESS
         return None
 
     if _matches(path, _ENCRYPTION_HINTS):
-        if before == "enabled" and after in ("disabled", "absent"):
+        # Encryption is not always a boolean. An algorithm name emptied out categorises as
+        # value -> absent, and insisting on enabled -> disabled missed exactly that case.
+        if before not in ("disabled", "absent") and after in ("disabled", "absent"):
             return NormalisedEvent.ENCRYPTION_DISABLED
         return None
 
     if _matches(path, _LOGGING_HINTS):
-        if before == "enabled" and after in ("disabled", "absent"):
+        if before not in ("disabled", "absent") and after in ("disabled", "absent"):
             return NormalisedEvent.SECURITY_LOGGING_DISABLED
         return None
 
@@ -111,6 +127,18 @@ def normalise_record(record: DriftRecord, *, scenario_id: str | None = None) -> 
     return findings
 
 
+# Drift findings used to carry no control id, which meant the policy engine - which matches
+# findings to controls by id and nothing else - could never mark a drift control
+# non-compliant. Detection worked and assessment silently did not. This table is the join.
+EVENT_TO_CONTROL: dict[NormalisedEvent, str] = {
+    NormalisedEvent.PUBLIC_NETWORK_ACCESS: "TG-P10",
+    NormalisedEvent.PRIVILEGE_EXPANSION: "TG-P11",
+    NormalisedEvent.ENCRYPTION_DISABLED: "TG-P12",
+    NormalisedEvent.SECURITY_LOGGING_DISABLED: "TG-P12",
+    NormalisedEvent.OUT_OF_BAND_DELETION: "TG-P13",
+}
+
+
 def _finding(
     record: DriftRecord,
     event: NormalisedEvent,
@@ -121,6 +149,7 @@ def _finding(
 ) -> Finding:
     suffix = attribute or record.change_action.value
     return Finding(
+        control_id=EVENT_TO_CONTROL.get(event),
         finding_id=f"{record.resource_address}:{suffix}:{event.value}",
         scenario_id=scenario_id,
         evidence_source=EvidenceSource.TERRAFORM_PLAN_JSON,

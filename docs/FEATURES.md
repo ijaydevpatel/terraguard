@@ -58,7 +58,7 @@ reports those separately so the remediation is different: purge history, not jus
 | AWS access key id (`AKIA`/`ASIA`) | TG-P06 | built |
 | PEM private key block | TG-P06 | built |
 | GitHub token (`ghp_`, `gho_`, …) | TG-P06 | built |
-| **Value under a sensitive key name** — `password`, `secret`, `token`, `api_key`, `client_secret`, `connection_string` … | TG-P06 | built |
+| **Value under a sensitive key name** - `password`, `secret`, `token`, `api_key`, `client_secret`, `connection_string` … | TG-P06 | built |
 | Suppresses variable references, placeholders and dummies (`var.pw`, `REPLACE_ME`, `YOUR_KEY`, `null`) | TG-P06 | built |
 | Reports the key name and a character count, never the value | TG-P06 | built |
 
@@ -88,7 +88,7 @@ normal path often survives somewhere else.
 | Shape-preserving replacement `[REDACTED]:len=n:sha256:…` | `redactor.py` | built |
 | Binary plan and raw JSON deleted in a `finally` block | `evidence_collector.py` | built |
 | `assert_clean()` as a final gate before output | `redactor.py` | built |
-| Sanitised terminal / JSON / CSV report | `report_generator.py` | **not built** |
+| Sanitised terminal / JSON / CSV report | `report_generator.py` | built |
 
 Verified on real data: 12 pilot runs over fixtures containing `TERRAGUARD_TEST_SECRET`
 markers produced zero markers in any output file.
@@ -104,7 +104,7 @@ Answers RQ1 and RQ4. Evidence source: GitHub Actions workflow YAML.
 | Saved plan or state uploaded via `actions/upload-artifact` | TG-P07 | built |
 | State or plan paths written to `actions/cache` | TG-P07 | built |
 | Plan contents echoed to the job log (`cat tfplan.json`) | TG-P06 | built |
-| No `permissions:` block — token falls back to the repository default | TG-P08 | built |
+| No `permissions:` block - token falls back to the repository default | TG-P08 | built |
 | `permissions: write-all` / `read-all` | TG-P08 | built |
 | Long-lived `AWS_ACCESS_KEY_ID` instead of OIDC | TG-P09 (optional) | built |
 | Unparseable workflow reported rather than skipped | TG-P08 | built |
@@ -119,7 +119,7 @@ Answers RQ1 and RQ4. Evidence source: GitHub Actions workflow YAML.
 | `encrypt` not set to true | TG-P03 | built |
 | No state locking configured | TG-P04 | built |
 | Deprecated `dynamodb_table` locking | TG-P04 | built |
-| Static parse works with no AWS credentials | — | built |
+| Static parse works with no AWS credentials | - | built |
 | Live bucket encryption / versioning / public-access block via boto3 | TG-P03, TG-P05, TG-P02 | fixture-only |
 
 ---
@@ -138,24 +138,24 @@ Answers RQ3. Eight core controls, four optional, each with a citation and remedi
 | Every control cites HashiCorp, AWS Config or GitHub Actions documentation | built |
 
 Coverage is the guard against false assurance. A compliance rate quoted without it cannot be
-interpreted — in the pilot, coverage ran from 0.12 on a repository-only scenario to 0.88 on
+interpreted - in the pilot, coverage ran from 0.12 on a repository-only scenario to 0.88 on
 the clean controls.
 
 ---
 
 ## 6. Severity prioritisation
 
-Answers RQ2. The comparator is built and frozen; the models are not.
+Answers RQ2. Comparator, features, both models and the predictor are built.
 
 | Capability | Module | Status |
 |---|---|---|
 | Written labelling rubric, three classes, five-rule ladder | `docs/SEVERITY_RUBRIC.md` | built |
 | Deterministic severity table (the non-AI comparator) | `severity_rules.py` | built |
-| Feature encoding | `feature_builder.py` | **not built** |
-| Logistic Regression | `model_trainer.py` | **not built** |
-| Random Forest | `model_trainer.py` | **not built** |
-| `StratifiedGroupKFold` grouped by scenario template | `model_trainer.py` | **not built** |
-| Rank a live finding with a confidence | `model_predictor.py` | **not built** |
+| Feature encoding | `feature_builder.py` | built |
+| Logistic Regression | `model_trainer.py` | built |
+| Random Forest | `model_trainer.py` | built |
+| `StratifiedGroupKFold` grouped by scenario template | `model_trainer.py` | built |
+| Rank a live finding with a confidence | `model_predictor.py` | built |
 
 The models rank findings that deterministic logic has already established. They never decide
 whether drift exists or whether a control was violated.
@@ -191,9 +191,9 @@ Answers RQ1 and RQ4.
 | Capability | Status |
 |---|---|
 | `terraguard collect` | built |
-| `scan`, `analyse`, `train`, `evaluate`, `report` subcommands | **not built** |
-| Terminal and JSON sanitised reports | **not built** |
-| Severity gate: critical/high fail, medium warn, low pass, indeterminate warn | **not built** |
+| `scan`, `analyse`, `train`, `evaluate`, `report` subcommands | built |
+| Terminal, JSON and CSV sanitised reports | built |
+| Severity gate: critical/high fail, medium warn, low pass, indeterminate warn | built |
 | Three recorded GitHub Actions runs | **not built** |
 
 ---
@@ -205,7 +205,17 @@ regulatory certification. Web dashboard. These are stated exclusions in §1.4, n
 
 ---
 
-## Honest status, 2 September 2026
+## Detection defects found and fixed by the generated corpus
+
+| Defect | Effect before the fix |
+|---|---|
+| Drift findings carried no control id | TG-P10/P11/P12 could never be non-compliant; an open security group assessed as compliant |
+| No control covered out-of-band deletion | A deleted resource was detected, then assessed as compliant. TG-P13 added |
+| Encryption removal categorised as a value change | Turning encryption off produced no finding |
+| Public access block off read as housekeeping | Classified as non-security operational drift |
+| `id-token: write` reported as a leaked secret | False positive on the project's own secure workflow fixture |
+
+## Honest status, 14 October 2026
 
 Detection, policy assessment and the deterministic severity baseline are built and tested.
 The models and the reporting layer are not.

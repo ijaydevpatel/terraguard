@@ -1,83 +1,105 @@
-# D04 — Detection and policy-assessment results
+# D04 - Detection and policy assessment results
 
-Draft for the results chapter. All figures are from the offline half of the dataset:
-26 observations and 32 findings across 13 scenario templates, each template replayed twice.
-The nine AWS drift templates have never run, so nothing here covers infrastructure drift.
+Draft for the results chapter. Figures come from the generated corpus plus the original
+hand-built fixtures: 684 observations and 678 findings across 56 scenario templates. Every
+configuration was written to disk and scanned by the real pipeline. None of it came from a
+live AWS account, which is the limitation at the end of this section.
 
 ## Detection against ground truth
 
 | Measure | Result |
 |---|---|
-| Runs where the manifest's control was raised | 26 / 26 |
-| Runs where policy status matched the manifest | 26 / 26 |
-| Clean negative-control runs | 4 |
-| Findings raised on clean runs (false alerts) | 0 |
+| Runs where the manifest's control was raised | 684 / 684 |
+| Runs where policy status matched the manifest | 684 / 684 |
+| Negative control runs | 120 |
+| Security findings on negative controls (false alerts) | 0 |
+| Non-security findings on negative controls | 72 |
 
-Every scenario raised the control its manifest named, and no other control was raised in
-error. The clean controls produced nothing at all.
+The last two rows need separating, and conflating them is a mistake I made the first time.
+The tag and description drift families are expected to stay policy compliant and still raise a
+finding, because a tag did change and the tool noticed. Counting those as false alerts
+reported 72 of them while nothing was wrong. A false alert is a security band finding on a
+scenario that should raise none, and there are none across 120 negative controls.
 
-The false-alert figure matters more than the detection count, and it should be read that
-way in the chapter. A scanner that flags a clean repository gets switched off within a week,
-so zero findings on four clean runs is the more useful result — even though four runs is a
-thin basis for it, and the write-up should say so rather than quoting 0% as if it were
-established.
-
-Detection at 26/26 is not evidence of a hard problem being solved. These are repository and
-workflow scenarios where the signal is a committed file or a YAML key, and the scanner looks
-for exactly that. The number would be worth much more if it came from injected drift in a
-live account, which is the half that has not run.
+Detection at 684 of 684 is not evidence of a hard problem solved. Each scenario was generated
+with a known violation and the scanner looks for exactly that class of violation, so the
+figure measures internal consistency rather than difficulty. What it does establish is that
+every control fires when it should and no control fires when it should not, across a corpus
+wide enough that a silent gap would show up. Four of them did, and are listed below.
 
 ## Assessment coverage
 
-Coverage ranges from 0.00 to 0.88 across the collected runs.
+Coverage ranges from 0.00 to 0.875.
 
-The extremes are both informative. A scenario whose only evidence is a plan JSON leaves
-every control indeterminate and reads 0.00: the tool knows it cannot answer. The clean
-controls reach 0.88, with the remaining control needing live AWS evidence that does not
-exist.
+Both extremes are informative. A scenario whose only evidence is a plan JSON leaves every
+repository and workflow control indeterminate and reads 0.00: the tool knows it cannot answer.
+The richest scenarios reach 0.875, with the remaining control needing live AWS evidence.
 
-This is the reason compliance is never reported alone. Seven compliant controls out of eight
+This is why compliance is never reported on its own. Seven compliant controls out of eight
 means one thing when all eight were assessed and something quite different when four were
-never looked at. The policy engine returns `indeterminate` rather than `compliant` whenever
-evidence is missing or unreadable, and a named test asserts that it does.
+never looked at. The policy engine returns indeterminate rather than compliant whenever
+evidence is missing or unreadable, and a named test asserts it.
 
 ## Processing time
 
 | | ms |
 |---|---:|
-| Minimum | 148 |
-| Median | 391 |
-| Maximum | 569 |
+| Minimum | 22.3 |
+| Median | 96.5 |
+| Maximum | 393.0 |
 
-Measured per run on the offline path with no network calls. The spread tracks how much
-evidence a scenario carries rather than anything about the analysis: the plan-JSON scenarios
-sit at the bottom, the workflow scenarios with a git-history walk at the top.
-
-These are not comparable to a figure from a live run, which would be dominated by
-`terraform plan -refresh-only` round-tripping to AWS. The local-versus-CI comparison in
-T102 is where a meaningful timing claim would come from.
+Measured per run with no network calls. The spread tracks how much evidence a scenario
+carries rather than anything about the analysis: plan JSON scenarios sit at the bottom,
+repository scans with a history walk at the top. These are not comparable to a live run, which
+would be dominated by `terraform plan -refresh-only` round-tripping to AWS.
 
 ## Data quality
 
-The pass over the collected dataset found no orphan runs and no blank required fields.
+No orphan runs, no blank required fields, and zero duplicate identifiers across 678 findings.
 
-It did find two duplicate `(run_id, finding_id)` pairs, both in WF-001. The cause is that
-`finding_id` is built from the file path and the control id, so a workflow that violates
-TG-P07 twice — once by uploading a plan artefact, once by writing state paths to the Actions
-cache — produces two genuinely different findings that collide on one identifier.
+The duplicate `(run_id, finding_id)` pairs reported earlier are fixed. The cause was that
+`finding_id` was built from the file path and control id alone, so a workflow violating TG-P07
+twice, once by uploading a plan artefact and once by writing state paths to the Actions cache,
+produced two genuinely different findings sharing one identifier. That inflated the
+`persistence_across_runs` feature, which the models use. Workflow finding ids now carry a short
+discriminator taken from the detail.
 
-This is a real defect rather than a cosmetic one. The `persistence_across_runs` feature
-counts how often a finding id recurs, so a collision inflates that count for the affected
-rows. It is recorded as a defect to fix rather than quietly deduplicated, because dropping
-one of the two would discard a real finding.
+## Detection gaps this corpus exposed
+
+Building the corpus found four defects the small fixture set had never exercised. Each was a
+silent failure rather than a visible one, which is the kind that survives to submission.
+
+**Drift findings carried no control id.** The policy engine matches findings to controls by id
+and nothing else, so TG-P10, TG-P11 and TG-P12 could never be marked non-compliant from drift.
+Detection worked and assessment quietly did not, so a run with a security group open to the
+world reported as compliant. Fixed with an explicit event to control table.
+
+**Out-of-band deletion had no control at all.** A resource deleted outside Terraform was
+detected and then assessed as compliant, because nothing covered it. TG-P13 was added.
+
+**Encryption removal read as an ordinary value change.** An algorithm name emptied out
+categorises as value to absent, while the normaliser required enabled to disabled. Turning
+encryption off produced no finding.
+
+**A public access block switched off was classified as housekeeping.** It reads as enabled to
+disabled rather than restricted to public, so it fell through to non-security operational
+drift.
+
+There was also one false positive, surfaced by the tool's own secure fixture: `id-token: write`
+in a workflow permissions block was reported as a leaked secret because the key contains the
+word token. It is a permission scope, not a credential.
+
+All five are fixed and covered by tests. They are reported here rather than quietly patched,
+because a detection tool that has never been shown to fail has usually not been tested hard
+enough.
 
 ## What these results do not support
 
-The headline claim of the project is drift detection, and none of the above tests it. The
-detection figures come from scanners reading committed files and workflow YAML. Every drift
-capability — security-group exposure, encryption, public access, IAM privilege, logging,
-out-of-band deletion — has been exercised against fixtures only, because the AWS account
-does not exist.
+The corpus is synthetic. Every configuration was written by a generator I designed, so the
+findings are genuine detections of real misconfigurations drawn from a population of my own
+choosing. It is not a sample of what engineers actually commit.
 
-Any sentence in the chapter that says the tool detects infrastructure drift must be
-qualified with "against synthetic plan JSON", until T021 changes that.
+Infrastructure drift is the project's headline claim, and the drift evidence here comes from
+plan JSON documents built to specification rather than captured from a live refresh. The AWS
+runs recorded in the runbook are the part that is not synthetic, and they are reported
+separately rather than pooled with these figures.

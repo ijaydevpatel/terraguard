@@ -1,4 +1,4 @@
-# D01 — Architecture and design decisions
+# D01 - Architecture and design decisions
 
 Draft for the methodology chapter. Written from `notes/decisions.md`; every claim here
 points at a file or a test.
@@ -12,7 +12,7 @@ missing is any sense of whether a given difference matters.
 
 A tag change and an SSH port opened to the internet appear in that array the same way. An
 engineer reading a plan with forty drift entries has no ordering to work with, and the two
-that matter sit somewhere in the middle. That gap — detection without prioritisation — is
+that matter sit somewhere in the middle. That gap - detection without prioritisation - is
 what this prototype addresses.
 
 ## Detection is deterministic; only ranking is learned
@@ -42,11 +42,11 @@ a ranking error and is measured separately.
 | Workflow scanner | `workflow_scanner.py` | CI handling of state, plans and credentials |
 | Backend scanner | `backend_scanner.py` | Backend configuration and, where possible, the live bucket |
 | Policy engine | `policy_engine.py` | Assess controls against evidence |
-| Severity models | Phase 6–7 | Rank findings that already exist |
+| Severity models | Phase 6-7 | Rank findings that already exist |
 
 The split between parser, extractor and normaliser is the one that needed thought. All three
-could sit in one module. Keeping them apart means the normalisation table — the part that
-encodes security judgement — can be read and argued with on its own, without wading through
+could sit in one module. Keeping them apart means the normalisation table - the part that
+encodes security judgement - can be read and argued with on its own, without wading through
 JSON handling.
 
 ## Four decisions worth defending
@@ -61,8 +61,8 @@ Every record carries `is_remote_drift`. Conflating them would put deliberate con
 edits into the drift dataset, and every severity label built on that dataset would be
 measuring the wrong thing.
 
-Replacement needed care too. Terraform writes it as a pair — `["delete", "create"]` or
-`["create", "delete"]` depending on `create_before_destroy` — so reading the first element
+Replacement needed care too. Terraform writes it as a pair - `["delete", "create"]` or
+`["create", "delete"]` depending on `create_before_destroy` - so reading the first element
 alone misclassifies half of all replacements as deletions. `classify_action` checks the pair.
 
 ### Direction decides whether a change is a finding
@@ -121,5 +121,5 @@ No web interface. No automatic remediation. No multi-cloud. No language model an
 pipeline. Single region, single account.
 
 These are not deferred features. A 100-hour project that tried to include them would produce
-a shallow version of each, and the question being asked — can drift and state-handling
-findings be prioritised usefully — does not need any of them.
+a shallow version of each, and the question being asked - can drift and state-handling
+findings be prioritised usefully - does not need any of them.

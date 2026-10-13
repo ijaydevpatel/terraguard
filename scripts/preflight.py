@@ -23,34 +23,17 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """W8/W9: feature pipeline, both models, leakage matrix, reporting layer
+COMMIT_MESSAGE = """Generate the scenario corpus and finish the command line
 
-Context features only. control_id and normalised_event are withheld because the severity
-rules switch on them, so feeding them in would hand the model the label. Random Forest
-reaches macro F1 0.7714 against 0.5687 for Logistic Regression under cross-validation
-grouped by scenario template, and recall on the high/critical class is 0.43 and 0.29 - the
-figure that would matter if anyone acted on the ranking.
-
-The deterministic baseline is excluded from the comparison table. It scores 1.0 on every
-metric because the labels are its own output, which is arithmetic rather than evidence, and
-listing it beside the models would read as the baseline winning. The comparison cannot rank
-them at all until labels exist that did not come from one of the contestants (R20, T112).
-
-The leakage check was run four ways and overturned the first interpretation: adding the rule
-inputs changes nothing under grouped folds but lifts macro F1 from 0.7186 to 0.9259 under a
-random split. Grouping by template is what defeats the leak, not the feature exclusion,
-because control ids are confounded with templates.
-
-Reporting layer: 17 fields per finding, three writers behind one redaction gate that runs on
-the finished report, since that is the artefact that leaves the machine. Terminal output is
-plain ASCII because CI logs mangle colour codes.
-
-Results moved from build/ to a committed results/ directory. They were being cited as
-evidence by the tracker and the methodology notes while sitting in a gitignored path, so a
-fresh clone would have found the citations pointing at nothing (R21).
-
-Six one-off scripts written around the broken workspace are removed; their useful parts are
-in scripts/build_results.py, which regenerates every result from the committed dataset."""
+The corpus builds 43 distinct scenario families rather than replaying a handful, because
+grouped cross-validation is bounded by independent families and not by row count. The dataset
+is now 684 observations and 678 findings across 56 templates, with detection and policy status
+matching ground truth on every run and no false alerts on 120 negative controls. Building it
+exposed four silent detection failures: drift findings carried no control id so drift controls
+could never fire, nothing covered out-of-band deletion, encryption removal read as an ordinary
+value change, and a disabled public access block read as housekeeping. All four are fixed,
+TG-P13 now covers deletion, and the command line gained scan, analyse, train, evaluate and
+report with a severity gate."""
 
 
 def say(text: str = "") -> None:

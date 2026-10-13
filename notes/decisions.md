@@ -5,7 +5,7 @@ Record the decision, the alternatives considered, and why the alternative lost.
 
 ---
 
-## 2026-07-28 — P0/P1 foundations
+## 2026-07-28 - P0/P1 foundations
 
 **Redaction runs on write, not on read.**
 Alternative: sanitise at report time. Rejected because the raw plan JSON would then exist on
@@ -48,12 +48,12 @@ whether the severity ranking shifts with environment. Only `test` is ever deploy
 
 ---
 
-## 2026-07-28 — CI, first run
+## 2026-07-28 - CI, first run
 
 **Checkov is installed in its own virtual environment, not in `requirements-dev.txt`.**
 Alternative: keep it in the dev requirements and loosen the project's `boto3` pin to
 accommodate it. Rejected because checkov 3.2.200 pins `boto3==1.34.25` exactly, so pip's
-resolver fails outright (`ResolutionImpossible`) — which is how the first CI run failed after
+resolver fails outright (`ResolutionImpossible`) - which is how the first CI run failed after
 11 seconds. Letting a comparison benchmark dictate the project's own dependency versions is
 the wrong trade: `boto3` is used by the scenario injection scripts and the backend checks,
 where the version matters, whereas checkov is only invoked as an external command in Phase 4
@@ -69,7 +69,7 @@ Evidence: `.github/workflows/ci.yml`.
 
 ---
 
-## 2026-07-28 — supervisor review response
+## 2026-07-28 - supervisor review response
 
 **State locking moved from DynamoDB to S3-native `use_lockfile`.**
 Alternative: keep the DynamoDB lock table. Rejected because Terraform 1.10 introduced
@@ -81,8 +81,8 @@ Terraform floor raised from 1.7 to **1.11**.
 Evidence: `terraform/bootstrap/state_backend.tf`, `outputs.tf`, `terraform/baseline/backend.tf`.
 
 **`ap-southeast-2` (Sydney) retained even though a New Zealand region now exists.**
-AWS opened `ap-southeast-6` (Auckland) on 2 September 2025, so the earlier justification —
-"nearest mainstream region" — was wrong. Sydney is kept on different grounds: broader service
+AWS opened `ap-southeast-6` (Auckland) on 2 September 2025, so the earlier justification -
+"nearest mainstream region" - was wrong. Sydney is kept on different grounds: broader service
 catalogue and substantially more documentation, which outweighs the latency saving for a
 prototype. The point is that the region is now a recorded decision with a stated reason,
 not an unexamined default.
@@ -92,12 +92,12 @@ Evidence: `terraform/bootstrap/variables.tf`, `docs/AWS_SETUP.md`.
 The original estimate was roughly four times the scale agreed for a STEM research project.
 Re-baselining exposed an inconsistency worth recording: P0 and P1 had been estimated at 70 h,
 which would have consumed 70% of a 100 h budget on scaffolding. Every estimate was rescaled,
-including retrospectively — P0/P1 is now 18 h, which reflects what was actually built.
+including retrospectively - P0/P1 is now 18 h, which reflects what was actually built.
 Scope cuts: 12 controls to 8, 20-30 scenario templates to 10-12, 200-300 observations to
 60-100, five severity classes to three, four report formats to two (terminal and JSON), and
 the Checkov comparison and TerraDS robustness pass dropped unless the freeze is met early.
 Consequence: 83 h remain across ~11.5 weeks, about 7 h/week. Time is no longer the binding
-constraint — AWS availability and the wall-clock duration of the experiment runs are.
+constraint - AWS availability and the wall-clock duration of the experiment runs are.
 
 **Three severity classes chosen up front rather than decided after data collection.**
 Alternative: keep five classes and run the W7 class-count gate. Rejected because 60-100
@@ -118,7 +118,7 @@ Evidence: to be implemented in `model_trainer.py` (Phase 7).
 ## Template for new entries
 
 ```
-## YYYY-MM-DD — <phase / task id>
+## YYYY-MM-DD - <phase / task id>
 
 **<Decision in one sentence.>**
 Alternative: <what else was considered>. Rejected because <reason>.
@@ -127,7 +127,7 @@ Evidence: <file, test, or report artefact that shows it>.
 
 ---
 
-## 2026-08-11 — Phase 5 pilot
+## 2026-08-11 - Phase 5 pilot
 
 **The harness reads the manifest, then sets it aside until the row is written.**
 Alternative: pass the expected control into the scanners so the harness can short-circuit.
@@ -156,7 +156,7 @@ until then the column carries no weight.
 
 ---
 
-## 2026-08-22 — deterministic baseline, and a correction to the class audit
+## 2026-08-22 - deterministic baseline, and a correction to the class audit
 
 **The deterministic severity table is frozen before any model is trained.**
 Alternative: tune the rules after seeing model results. Rejected because the table is the
@@ -186,7 +186,7 @@ derived from `findings.csv` at training time.
 
 ---
 
-## 2026-08-22 — W7 catalogue rebalance
+## 2026-08-22 - W7 catalogue rebalance
 
 **Clean controls measure false alerts but contribute nothing to training.**
 This is what the first rebalance attempt missed. CLEAN-001 and CLEAN-002 produce zero
@@ -212,7 +212,7 @@ Evidence: `tests/test_scenario_catalogue.py`.
 
 ---
 
-## 2026-09-16 — W8/W9 models, and what the comparison can claim
+## 2026-09-16 - W8/W9 models, and what the comparison can claim
 
 **The deterministic baseline was removed from the comparison table.**
 Alternative: report it at 1.0 alongside the models. Rejected because the labels are the
@@ -220,7 +220,7 @@ baseline's own output, so 1.0 is arithmetic rather than evidence, and a reader s
 table would take it as the baseline beating the models. While the labels come from one of the
 contestants the comparison cannot rank them at all. The row is described in prose with its
 reason instead. A rules-versus-models claim needs labels from outside the rules, which is
-T112 and T113, and neither is arranged — so the RQ2 answer stays open.
+T112 and T113, and neither is arranged - so the RQ2 answer stays open.
 Evidence: `results/model_comparison.md`, `notes/results_D05_severity_models.md`.
 
 **Grouping, not feature exclusion, is what defeats the control-id leak.**
@@ -241,13 +241,13 @@ results chapter by roughly fifteen points.
 `assessment_coverage` (0.21) and `detail_length` (0.17) are the two strongest Random Forest
 importances, and neither is a security property. Coverage is a property of the run and partly
 encodes which scenario family produced the finding; detail length is close to a fingerprint of
-a scanner's message template. Not leakage — both are available at prediction time — but a
+a scanner's message template. Not leakage - both are available at prediction time - but a
 model leaning on them may generalise badly to a catalogue it was not trained on. Re-running
 without run-level features is the next test.
 
 **`finding_id` is not unique, and the duplicates are not being deduplicated.**
-The id is built from file path plus control id, so a workflow violating TG-P07 twice — once by
-uploading a plan artefact, once by writing state paths to the Actions cache — produces two
+The id is built from file path plus control id, so a workflow violating TG-P07 twice - once by
+uploading a plan artefact, once by writing state paths to the Actions cache - produces two
 genuinely different findings on one id. This inflates `persistence_across_runs` for the
 affected rows. Recorded as a defect (T124) rather than dropped, because discarding either row
 would discard a real finding.

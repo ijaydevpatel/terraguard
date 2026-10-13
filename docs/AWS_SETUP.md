@@ -46,8 +46,8 @@ provider.
 Both alarms are defined in Terraform (`terraform/bootstrap/budgets.tf`) and created by the
 first `apply`, so there is nothing to click:
 
-- **USD 5** — alert at 100% actual.
-- **USD 15** — alert at 100% actual and 100% forecast.
+- **USD 5** - alert at 100% actual.
+- **USD 15** - alert at 100% actual and 100% forecast.
 
 Set `budget_alert_email` in `terraform/bootstrap/terraform.tfvars` to an address you read.
 Budgets is a global service, so these are created in `us-east-1` via an aliased provider even

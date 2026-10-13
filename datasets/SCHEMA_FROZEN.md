@@ -1,4 +1,4 @@
-# Frozen schema — 11 August 2026
+# Frozen schema - 11 August 2026
 
 The pilot is done, so the observation schema is now fixed. Any change from here invalidates
 the records already collected, because a row written under one schema cannot be compared
@@ -17,7 +17,7 @@ that need a deployed baseline were not part of the pilot and are still unrun.
 | Detection matched ground truth | 12 of 12 |
 | Policy status matched ground truth | 12 of 12 |
 | False alerts across four clean-control runs | 0 |
-| Processing time | 125–366 ms, median 188 ms |
+| Processing time | 125-366 ms, median 188 ms |
 | Assessment coverage | 0.12 to 0.88 |
 
 The coverage spread is the useful part. A repository-only scenario such as ST-001 gives the
@@ -38,9 +38,9 @@ comparable with the others.
 
 ## Frozen
 
-- `datasets/data_dictionary.csv` — 21 fields, types, valid values, measurement rules
-- `datasets/observations.csv` — one row per run
-- `datasets/findings.csv` — one row per finding, joined on `run_id`
+- `datasets/data_dictionary.csv` - 21 fields, types, valid values, measurement rules
+- `datasets/observations.csv` - one row per run
+- `datasets/findings.csv` - one row per finding, joined on `run_id`
 - The manifest format in `datasets/scenario_manifests/*.yaml`
 
 `deterministic_severity` is present but empty. Phase 6 fills it. The column exists now so

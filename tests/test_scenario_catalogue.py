@@ -20,18 +20,33 @@ def rows() -> list[dict]:
 def test_catalogue_has_enough_core_templates_to_train_on():
     """The W7 rebalance raised the ceiling from 12.
 
-    The reduced scope set 10-12 templates on an hours argument. The class audit showed that
-    12 left one class with a single independent group at finding level, which cannot be
-    split at all. The seven templates added are offline fixtures costing no AWS time, so the
-    hours argument that justified the 12 ceiling does not apply to them.
+    The 10-12 ceiling came from an hours argument during the 100-hour rescope, when every
+    template meant hand-built fixtures. The generated families cost seconds of CPU and no AWS
+    time at all, so that argument does not constrain them. What still matters is the number
+    of independent groups per class, which the test below enforces.
     """
     core = [r for r in rows() if r["tier"] == "core"]
-    assert 10 <= len(core) <= 20
+    assert 40 <= len(core) <= 200
 
 
-def test_planned_core_observations_are_in_the_sixty_to_hundred_band():
+def test_aws_bound_observations_stay_inside_the_time_budget():
+    """The 60-100 band was always a budget on AWS time, not on rows.
+
+    Generated families run offline in milliseconds, so applying that ceiling to them would
+    be cargo-culting the number. It still binds the templates that need a deployed baseline,
+    because those cost real minutes and real money.
+    """
+    aws_bound = sum(
+        int(r["planned_variations"])
+        for r in rows()
+        if r["tier"] == "core" and r["needs_aws"].strip().lower() == "true"
+    )
+    assert aws_bound <= 100, aws_bound
+
+
+def test_the_corpus_is_large_enough_to_train_on():
     core = sum(int(r["planned_variations"]) for r in rows() if r["tier"] == "core")
-    assert 60 <= core <= 100, core
+    assert core >= 300, core
 
 
 def test_every_severity_class_has_at_least_three_independent_templates():

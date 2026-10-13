@@ -1,18 +1,18 @@
 {
   "grouped_without_rule_inputs": {
-    "macro_f1": 0.5687,
-    "accuracy": 0.5625
+    "macro_f1": 0.6699,
+    "accuracy": 0.7611
   },
   "grouped_with_rule_inputs": {
-    "macro_f1": 0.5687,
-    "accuracy": 0.5625
+    "macro_f1": 0.859,
+    "accuracy": 0.885
   },
   "ungrouped_without_rule_inputs": {
-    "macro_f1": 0.7186,
-    "accuracy": 0.7188
+    "macro_f1": 0.8854,
+    "accuracy": 0.9027
   },
   "ungrouped_with_rule_inputs": {
-    "macro_f1": 0.9259,
-    "accuracy": 0.9375
+    "macro_f1": 1.0,
+    "accuracy": 1.0
   }
 }

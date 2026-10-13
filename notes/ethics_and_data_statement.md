@@ -1,4 +1,4 @@
-# D08 — Ethics and data statement
+# D08 - Ethics and data statement
 
 Draft for the dissertation front matter.
 
@@ -24,8 +24,8 @@ The dataset has two tables. `observations.csv` holds one row per scenario run;
 `findings.csv` holds one row per control violation raised. At the time of writing these
 contain 26 and 32 rows, all from offline fixtures.
 
-There was no viable alternative to generating it. The labels this project needs — a drift
-event paired with a policy outcome and a severity band, under a known ground truth — do not
+There was no viable alternative to generating it. The labels this project needs - a drift
+event paired with a policy outcome and a severity band, under a known ground truth - do not
 exist in any public dataset. TerraGoat and similar corpora supply insecure Terraform, but not
 the run-level ground truth that makes a detection figure meaningful.
 
@@ -45,7 +45,7 @@ Three controls enforce this rather than relying on care:
 - Redaction happens on write. The collector never puts an unredacted plan on disk: the binary
   plan and raw JSON live in a temporary directory removed in a `finally` block.
 
-Redaction preserves shape rather than deleting values — `[REDACTED]:len=n:sha256:…` — so the
+Redaction preserves shape rather than deleting values - `[REDACTED]:len=n:sha256:…` - so the
 same secret can be correlated across runs without the value being recoverable. A final
 `assert_clean()` gate runs on the finished report, because the report is the artefact that
 actually leaves the machine.
@@ -75,8 +75,8 @@ The tool reads configuration and reports; it never modifies infrastructure, neve
 state, and has no remediation capability. Autonomous remediation is an explicit exclusion in
 §1.4, and that exclusion is partly an ethical one.
 
-The injection scripts are the sharper end. They deliberately create insecure configurations —
-an open security group, a disabled trail — and are written to run against one specific
+The injection scripts are the sharper end. They deliberately create insecure configurations -
+an open security group, a disabled trail - and are written to run against one specific
 author-owned sandbox with pre-flight checks that refuse to run anywhere else. They are
 research instruments for a controlled environment, not a toolkit.
 

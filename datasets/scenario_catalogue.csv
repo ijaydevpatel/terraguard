@@ -21,3 +21,46 @@ WF-003,state_security,github_workflow,workflow omits the permissions block entir
 TAG-002,infrastructure_drift,aws_s3_bucket,"tag values changed, nothing else (offline plan JSON fixture)",True,tags.Owner,compliant,,non_security_operational_drift,non_security_or_low,terraform_plan_json,core,False,6
 TAG-003,infrastructure_drift,aws_vpc_security_group_ingress_rule,"rule description reworded, CIDR unchanged (offline plan JSON fixture)",True,description,compliant,,non_security_operational_drift,non_security_or_low,terraform_plan_json,core,False,5
 TAG-004,infrastructure_drift,aws_iam_role,tag values changed on two resources at once (offline plan JSON fixture),True,tags,compliant,,non_security_operational_drift,non_security_or_low,terraform_plan_json,core,False,5
+GEN-STATE-ROOT,state_security,repository_file,state file committed at the repository root,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-STATE-NESTED,state_security,repository_file,state file committed inside an environment directory,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-STATE-BACKUP,state_security,repository_file,state backup committed,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-STATE-NUMBERED,state_security,repository_file,numbered state backup committed,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-PLAN-BINARY,state_security,repository_file,saved binary plan committed,False,,non_compliant,TG-P07,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-PLAN-JSON,state_security,repository_file,state-derived plan JSON committed,False,,non_compliant,TG-P07,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-PLAN-NAMED,state_security,repository_file,plan JSON committed under the generic name,False,,non_compliant,TG-P07,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-TEMP-TMP,state_security,repository_file,leftover state working file,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-TEMP-ORIG,state_security,repository_file,leftover state .orig file,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-TEMP-CACHED,state_security,repository_file,state cached under .terraform,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-TEMP-CRASH,state_security,repository_file,"Terraform crash log, which can contain state values",False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-TEMP-PLANOUT,state_security,repository_file,plan output captured to a file,False,,non_compliant,TG-P01,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-SECRET-AWSKEY,sensitive_data,repository_file,AWS access key id in a tracked file,False,,non_compliant,TG-P06,sensitive_data_exposure,high_or_critical,generated,core,False,15
+GEN-SECRET-PEM,sensitive_data,repository_file,PEM private key block in a tracked file,False,,non_compliant,TG-P06,sensitive_data_exposure,high_or_critical,generated,core,False,15
+GEN-SECRET-GHTOKEN,sensitive_data,repository_file,GitHub token in a tracked file,False,,non_compliant,TG-P06,sensitive_data_exposure,high_or_critical,generated,core,False,15
+GEN-SECRET-KEYNAME,sensitive_data,repository_file,"value under a sensitive key name, no recognisable shape",False,,non_compliant,TG-P06,sensitive_data_exposure,high_or_critical,generated,core,False,15
+GEN-BK-LOCAL,state_security,terraform_backend,"local backend, state never leaves the workstation",False,,non_compliant,TG-P02,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-BK-NONE,state_security,terraform_backend,no backend block at all,False,,non_compliant,TG-P02,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-BK-NOENCRYPT,state_security,terraform_backend,remote backend without encryption at rest,False,,non_compliant,TG-P03,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-BK-NOLOCK,state_security,terraform_backend,no state locking configured,False,,non_compliant,TG-P04,insecure_state_handling,medium,generated,core,False,15
+GEN-BK-DYNAMODB,state_security,terraform_backend,deprecated dynamodb_table locking,False,,non_compliant,TG-P04,insecure_state_handling,medium,generated,core,False,15
+GEN-BK-SECURE,state_security,terraform_backend,"correctly configured backend, negative control",False,,compliant,,insecure_state_handling,non_security_or_low,generated,core,False,15
+GEN-WF-ARTEFACT,cicd_security,github_workflow,saved plan uploaded as a workflow artefact,False,,non_compliant,TG-P07,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-WF-CACHE,cicd_security,github_workflow,state path written to the Actions cache,False,,non_compliant,TG-P07,insecure_state_handling,high_or_critical,generated,core,False,15
+GEN-WF-ECHO,cicd_security,github_workflow,plan contents echoed to the job log,False,,non_compliant,TG-P06,sensitive_data_exposure,high_or_critical,generated,core,False,15
+GEN-WF-WRITEALL,cicd_security,github_workflow,token scope set to write-all,False,,non_compliant,TG-P08,privilege_expansion,medium,generated,core,False,15
+GEN-WF-READALL,cicd_security,github_workflow,token scope set to read-all,False,,non_compliant,TG-P08,privilege_expansion,medium,generated,core,False,15
+GEN-WF-NOPERM,cicd_security,github_workflow,"no permissions block, token inherits the repository default",False,,non_compliant,TG-P08,privilege_expansion,medium,generated,core,False,15
+GEN-WF-LONGLIVED,cicd_security,github_workflow,long-lived AWS keys instead of OIDC,False,,non_compliant,TG-P09,privilege_expansion,medium,generated,core,False,15
+GEN-WF-SECURE,cicd_security,github_workflow,"OIDC and least privilege, negative control",False,,compliant,,privilege_expansion,non_security_or_low,generated,core,False,15
+GEN-DRIFT-SGOPEN,infrastructure_drift,aws_resource,ingress opened to every address,True,cidr_ipv4,non_compliant,TG-P10,public_network_access,high_or_critical,generated,core,False,15
+GEN-DRIFT-SGOPEN6,infrastructure_drift,aws_resource,IPv6 ingress opened to every address,True,cidr_ipv6,non_compliant,TG-P10,public_network_access,high_or_critical,generated,core,False,15
+GEN-DRIFT-ENCRYPT,infrastructure_drift,aws_resource,bucket encryption removed,True,sse_algorithm,non_compliant,TG-P12,encryption_disabled,high_or_critical,generated,core,False,15
+GEN-DRIFT-PUBLICACL,infrastructure_drift,aws_resource,public access block disabled,True,block_public_acls,non_compliant,TG-P10,public_network_access,high_or_critical,generated,core,False,15
+GEN-DRIFT-IAMWILD,infrastructure_drift,aws_resource,IAM action widened to a wildcard,True,policy,non_compliant,TG-P11,privilege_expansion,high_or_critical,generated,core,False,15
+GEN-DRIFT-TRAILOFF,infrastructure_drift,aws_resource,the only audit trail stopped,True,enable_logging,non_compliant,TG-P12,security_logging_disabled,high_or_critical,generated,core,False,15
+GEN-DRIFT-DELETE,infrastructure_drift,aws_resource,resource deleted outside Terraform,True,id,non_compliant,TG-P13,out_of_band_deletion,high_or_critical,generated,core,False,15
+GEN-DRIFT-ACCESSLOG,infrastructure_drift,aws_resource,bucket access logging off while the trail still runs,True,s3_access_logging,non_compliant,TG-P12,security_logging_disabled,medium,generated,core,False,15
+GEN-DRIFT-TAGOWNER,infrastructure_drift,aws_resource,"tag value changed, security position unchanged",True,tags.Owner,compliant,,non_security_operational_drift,non_security_or_low,generated,core,False,15
+GEN-DRIFT-TAGENV,infrastructure_drift,aws_resource,environment label edited,True,tags.environment,compliant,,non_security_operational_drift,non_security_or_low,generated,core,False,15
+GEN-DRIFT-DESC,infrastructure_drift,aws_resource,"rule description reworded, CIDR unchanged",True,description,compliant,,non_security_operational_drift,non_security_or_low,generated,core,False,15
+GEN-DRIFT-NAMETAG,infrastructure_drift,aws_resource,name tag edited on the trail,True,tags.Name,compliant,,non_security_operational_drift,non_security_or_low,generated,core,False,15
+GEN-DRIFT-REPAIR,infrastructure_drift,aws_resource,"public to restricted, a repair and not a finding",True,cidr_ipv4,compliant,,non_security_operational_drift,non_security_or_low,generated,core,False,15

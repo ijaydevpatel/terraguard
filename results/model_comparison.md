@@ -1,6 +1,6 @@
 # Severity model comparison
 
-32 findings from 11 scenario templates, grouped cross-validation with 3 splits.
+678 findings from 51 scenario templates, grouped cross-validation with 3 splits.
 
 ## What is being predicted
 
@@ -13,8 +13,8 @@ switches on.
 
 | Model | Macro F1 | Weighted F1 | Accuracy | Recall on high/critical |
 |---|---:|---:|---:|---:|
-| logistic_regression | 0.5687 | 0.5387 | 0.5625 | 0.2857 |
-| random_forest | 0.7714 | 0.7357 | 0.75 | 0.4286 |
+| logistic_regression | 0.6699 | 0.7629 | 0.7611 | 0.821 |
+| random_forest | 0.5482 | 0.7123 | 0.7301 | 0.8704 |
 
 ## The deterministic baseline is not in that table, on purpose
 
@@ -31,8 +31,8 @@ rules-versus-models claim belongs in the results chapter yet.
 
 | Split | Rule inputs withheld | Rule inputs included |
 |---|---:|---:|
-| grouped by template | 0.5687 | 0.5687 |
-| ungrouped (random) | 0.7186 | 0.9259 |
+| grouped by template | 0.6699 | 0.859 |
+| ungrouped (random) | 0.8854 | 1.0 |
 
 Grouping, not the feature exclusion, is what defeats the leak: control ids are
 confounded with scenario templates, so a held-out template brings categories the model
@@ -42,9 +42,9 @@ has never seen. The gap in the left-hand column is the price of the honest split
 
 | Band | Findings | Independent templates |
 |---|---:|---:|
-| high_or_critical | 14 | 4 |
-| medium | 10 | 5 |
-| non_security_or_low | 8 | 3 |
+| high_or_critical | 486 | 34 |
+| medium | 105 | 11 |
+| non_security_or_low | 87 | 8 |
 
 ## How much weight these numbers carry
 

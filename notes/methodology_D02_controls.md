@@ -1,4 +1,4 @@
-# D02 — The control catalogue and where it comes from
+# D02 - The control catalogue and where it comes from
 
 Draft for the methodology chapter.
 
@@ -41,7 +41,7 @@ notes: S3-native locking arrived in 1.10 and `dynamodb_table` was deprecated in 
 
 **AWS Config managed rules** give TG-P03 and TG-P05, and the optional TG-P10 and TG-P12.
 These are AWS's own definitions of what a correctly configured bucket or security group looks
-like — `s3-bucket-server-side-encryption-enabled`, `s3-bucket-versioning-enabled`,
+like - `s3-bucket-server-side-encryption-enabled`, `s3-bucket-versioning-enabled`,
 `restricted-ssh`, `s3-bucket-logging-enabled`. Using them means the assessment can be checked
 against an external reference rather than against my judgement.
 
@@ -58,7 +58,7 @@ condition, decision rule, expected secure result, severity if violated, remediat
 
 The applicability condition earns its place. TG-P05 needs live AWS credentials to read the
 bucket's versioning status. Without them the control does not become compliant and does not
-become non-compliant — it becomes `indeterminate`, and the run says which evidence was
+become non-compliant - it becomes `indeterminate`, and the run says which evidence was
 missing.
 
 ## Four outcomes, not two
@@ -84,14 +84,14 @@ Twelve offline observations across six templates:
 - Every scenario raised the control its manifest named, and no other control was raised in
   error.
 - Four clean-control runs produced zero findings. That figure is the false-alert rate, and it
-  matters more than the detection count — a scanner that flags a clean repository is one
+  matters more than the detection count - a scanner that flags a clean repository is one
   nobody keeps running.
 - ST-001 and ST-002 each raised exactly one control and left seven indeterminate, which is
   what should happen when only repository evidence exists.
 - WF-001 raised five findings across TG-P06, TG-P07, TG-P08 and TG-P09 from a single
   deliberately bad workflow.
 
-The drift controls — TG-P10, TG-P11, TG-P12 — have not been exercised against real AWS. They
+The drift controls - TG-P10, TG-P11, TG-P12 - have not been exercised against real AWS. They
 pass against fixtures. That is a weaker claim and the results chapter should say so.
 
 ## What was dropped, and what it costs

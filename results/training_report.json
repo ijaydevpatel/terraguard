@@ -1,16 +1,16 @@
 {
-  "n_findings": 32,
-  "n_groups": 11,
+  "n_findings": 678,
+  "n_groups": 51,
   "n_splits": 3,
   "class_support": {
-    "high_or_critical": 14,
-    "medium": 10,
-    "non_security_or_low": 8
+    "high_or_critical": 486,
+    "medium": 105,
+    "non_security_or_low": 87
   },
   "groups_per_class": {
-    "high_or_critical": 4,
-    "medium": 5,
-    "non_security_or_low": 3
+    "high_or_critical": 34,
+    "medium": 11,
+    "non_security_or_low": 8
   },
   "labels": [
     "high_or_critical",
@@ -28,36 +28,36 @@
           "precision": 1.0,
           "recall": 1.0,
           "f1": 1.0,
-          "support": 14
+          "support": 486
         },
         "medium": {
           "precision": 1.0,
           "recall": 1.0,
           "f1": 1.0,
-          "support": 10
+          "support": 105
         },
         "non_security_or_low": {
           "precision": 1.0,
           "recall": 1.0,
           "f1": 1.0,
-          "support": 8
+          "support": 87
         }
       },
       "confusion": [
         [
-          14,
+          486,
           0,
           0
         ],
         [
           0,
-          10,
+          105,
           0
         ],
         [
           0,
           0,
-          8
+          87
         ]
       ],
       "high_risk_recall": 1.0,
@@ -65,155 +65,155 @@
     },
     {
       "name": "logistic_regression",
-      "macro_f1": 0.5687,
-      "weighted_f1": 0.5387,
-      "accuracy": 0.5625,
+      "macro_f1": 0.6699,
+      "weighted_f1": 0.7629,
+      "accuracy": 0.7611,
       "per_class": {
         "high_or_critical": {
-          "precision": 1.0,
-          "recall": 0.2857,
-          "f1": 0.4444,
-          "support": 14
+          "precision": 0.8418,
+          "recall": 0.821,
+          "f1": 0.8313,
+          "support": 486
         },
         "medium": {
-          "precision": 0.375,
-          "recall": 0.6,
-          "f1": 0.4615,
-          "support": 10
+          "precision": 0.5102,
+          "recall": 0.7143,
+          "f1": 0.5952,
+          "support": 105
         },
         "non_security_or_low": {
-          "precision": 0.6667,
-          "recall": 1.0,
-          "f1": 0.8,
-          "support": 8
+          "precision": 0.7368,
+          "recall": 0.4828,
+          "f1": 0.5833,
+          "support": 87
         }
       },
       "confusion": [
         [
-          4,
-          10,
+          399,
+          72,
+          15
+        ],
+        [
+          30,
+          75,
           0
         ],
         [
+          45,
           0,
-          6,
-          4
-        ],
-        [
-          0,
-          0,
-          8
+          42
         ]
       ],
-      "high_risk_recall": 0.2857,
+      "high_risk_recall": 0.821,
       "note": "3/3 folds usable, grouped by scenario template"
     },
     {
       "name": "random_forest",
-      "macro_f1": 0.7714,
-      "weighted_f1": 0.7357,
-      "accuracy": 0.75,
+      "macro_f1": 0.5482,
+      "weighted_f1": 0.7123,
+      "accuracy": 0.7301,
       "per_class": {
         "high_or_critical": {
-          "precision": 1.0,
-          "recall": 0.4286,
-          "f1": 0.6,
-          "support": 14
+          "precision": 0.779,
+          "recall": 0.8704,
+          "f1": 0.8222,
+          "support": 486
         },
         "medium": {
-          "precision": 0.5556,
-          "recall": 1.0,
-          "f1": 0.7143,
-          "support": 10
+          "precision": 0.7692,
+          "recall": 0.5714,
+          "f1": 0.6557,
+          "support": 105
         },
         "non_security_or_low": {
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "support": 8
+          "precision": 0.2105,
+          "recall": 0.1379,
+          "f1": 0.1667,
+          "support": 87
         }
       },
       "confusion": [
         [
-          6,
-          8,
+          423,
+          18,
+          45
+        ],
+        [
+          45,
+          60,
           0
         ],
         [
+          75,
           0,
-          10,
-          0
-        ],
-        [
-          0,
-          0,
-          8
+          12
         ]
       ],
-      "high_risk_recall": 0.4286,
+      "high_risk_recall": 0.8704,
       "note": "3/3 folds usable, grouped by scenario template"
     }
   ],
   "leakage": {
-    "macro_f1": 0.5687,
-    "accuracy": 0.5625,
+    "macro_f1": 0.859,
+    "accuracy": 0.885,
     "folds_used": 3,
     "interpretation": "Measured under the same grouped folds. Compare against the ungrouped figure: if grouping alone suppresses the leak, that is because control ids are template-specific, so a held-out template contributes categories the model never saw in training."
   },
   "coefficients": {
     "high_or_critical": {
-      "path_mentions_permission": -0.7956,
-      "assessment_coverage": -0.4071,
-      "evidence_source=repository": 0.3979,
-      "is_state_artefact": 0.3979,
-      "findings_in_run": 0.3089,
-      "resource_type=repository_file": 0.2995,
-      "evidence_source=terraform_plan_json": -0.2993,
-      "persistence_across_runs": 0.235,
-      "resource_type=aws_iam_role": -0.1203,
-      "path_mentions_logging": 0.0937
+      "resource_type=aws_s3_bucket_logging": -3.315,
+      "resource_type=aws_iam_role_policy": 3.1444,
+      "path_mentions_permission": -1.9219,
+      "resource_type=aws_iam_role": -1.3359,
+      "resource_type=repository_file": 1.0706,
+      "evidence_source=terraform_plan_json": -1.0517,
+      "evidence_source=backend_config": 0.9463,
+      "path_mentions_logging": -0.7512,
+      "resource_type=aws_s3_bucket_server_side_encryption_configuration": 0.5868,
+      "path_mentions_encryption": 0.5695
     },
     "medium": {
-      "assessment_coverage": 0.7526,
-      "path_mentions_permission": 0.5904,
-      "findings_in_run": -0.5741,
-      "persistence_across_runs": 0.4921,
-      "evidence_source=backend_config": 0.4523,
-      "evidence_source=repository": -0.3172,
-      "is_state_artefact": -0.3172,
-      "attribute_depth": 0.2246,
-      "evidence_source=terraform_plan_json": -0.1683,
-      "resource_type=repository_file": 0.1682
+      "resource_type=aws_s3_bucket_logging": 2.7515,
+      "path_mentions_permission": 2.392,
+      "resource_type=aws_iam_role": -1.2678,
+      "attribute_depth": 1.08,
+      "resource_type=repository_file": -0.9794,
+      "evidence_source=backend_config": -0.9397,
+      "evidence_source=terraform_plan_json": 0.9333,
+      "persistence_across_runs": 0.4952,
+      "assessment_coverage": 0.4879,
+      "findings_in_run": -0.4728
     },
     "non_security_or_low": {
-      "persistence_across_runs": -0.7271,
-      "resource_type=repository_file": -0.4677,
-      "evidence_source=terraform_plan_json": 0.4676,
-      "evidence_source=backend_config": -0.3648,
-      "assessment_coverage": -0.3456,
-      "attribute_depth": -0.2912,
-      "findings_in_run": 0.2652,
-      "resource_type=aws_iam_role": 0.2206,
-      "path_mentions_permission": 0.2052,
-      "detail_length": -0.1469
+      "resource_type=aws_iam_role_policy": -2.9861,
+      "resource_type=aws_iam_role": 2.6037,
+      "attribute_depth": -0.9041,
+      "findings_in_run": 0.6856,
+      "detail_length": -0.6041,
+      "resource_type=aws_s3_bucket_logging": 0.5634,
+      "resource_type=aws_s3_bucket_server_side_encryption_configuration": -0.5599,
+      "path_mentions_encryption": -0.5592,
+      "path_mentions_logging": 0.5468,
+      "resource_type=aws_s3_bucket": 0.4843
     }
   },
   "importances": {
-    "assessment_coverage": 0.2111,
-    "detail_length": 0.1748,
-    "resource_type=repository_file": 0.1206,
-    "evidence_source=terraform_plan_json": 0.1185,
-    "persistence_across_runs": 0.0716,
-    "path_mentions_permission": 0.0679,
-    "findings_in_run": 0.0481,
-    "evidence_source=workflow": 0.0343,
-    "attribute_depth": 0.0343,
-    "evidence_source=backend_config": 0.0316,
-    "is_state_artefact": 0.0201,
-    "evidence_source=repository": 0.0193,
-    "resource_type=aws_iam_role": 0.0111,
-    "path_mentions_logging": 0.0104,
-    "path_mentions_public": 0.008
+    "detail_length": 0.2945,
+    "resource_type=repository_file": 0.1132,
+    "evidence_source=terraform_plan_json": 0.1013,
+    "persistence_across_runs": 0.09,
+    "evidence_source=repository": 0.07,
+    "path_mentions_permission": 0.0577,
+    "assessment_coverage": 0.0416,
+    "is_state_artefact": 0.0308,
+    "evidence_source=backend_config": 0.0253,
+    "evidence_source=workflow": 0.0252,
+    "attribute_depth": 0.0247,
+    "resource_type=aws_s3_bucket_logging": 0.022,
+    "path_mentions_logging": 0.0171,
+    "resource_type=aws_iam_role_policy": 0.016,
+    "findings_in_run": 0.015
   },
   "warnings": []
 }

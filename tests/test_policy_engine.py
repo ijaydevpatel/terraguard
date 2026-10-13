@@ -22,12 +22,13 @@ def test_catalogue_has_eight_core_controls():
 
 def test_optional_controls_are_opt_in():
     full = load_controls(POLICIES, include_optional=True)
-    assert len(full) == 12
+    assert len(full) == 13  # TG-P13 added for out-of-band deletion
     assert {c.id for c in full} - {c.id for c in load_controls(POLICIES)} == {
         "TG-P09",
         "TG-P10",
         "TG-P11",
         "TG-P12",
+        "TG-P13",
     }
 
 

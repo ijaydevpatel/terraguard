@@ -18,6 +18,7 @@ from .models import EvidenceSource, Finding, NormalisedEvent
 
 __all__ = [
     "scan_repository",
+    "walk_paths",
     "scan_paths",
     "scan_temp_artefacts",
     "find_sensitive_key_values",
@@ -61,7 +62,11 @@ _KV_PATTERNS = [
 _NOT_A_SECRET = re.compile(
     r"^\s*$|^(var|local|module|data|each|count)\.|^\$\{|^\{\{|"
     r"REPLACE|CHANGE.?ME|YOUR_|EXAMPLE|PLACEHOLDER|TODO|xxx+|\*{3,}|"
-    r"^(true|false|null|none|nil)$|^[0-9]+$|^TERRAGUARD_TEST_SECRET_",
+    r"^(true|false|null|none|nil)$|^[0-9]+$|^TERRAGUARD_TEST_SECRET_|"
+    # GitHub Actions permission scopes read as `id-token: write`. The key contains "token"
+    # and the value is a permission level, not a credential. Our own secure workflow
+    # fixture was being reported as a secret leak until this was added.
+    r"^(read|write|read-all|write-all|none)$",
     re.IGNORECASE,
 )
 
@@ -249,9 +254,28 @@ def scan_temp_artefacts(paths: list[str], *, include_fixtures: bool = False) -> 
     return findings
 
 
+def walk_paths(root: Path) -> list[str]:
+    """Every file on disk, for a directory that is not a git repository."""
+    return [
+        str(p.relative_to(root)).replace("\\", "/")
+        for p in root.rglob("*")
+        if p.is_file() and ".git/" not in str(p.relative_to(root)).replace("\\", "/")
+    ]
+
+
 def scan_repository(repo_root: str | Path, *, include_history: bool = True) -> list[Finding]:
+    """Scan a repository, or any directory.
+
+    `git ls-files` is the right source inside a working tree, because a file being tracked is
+    what makes it exposed. Pointed at a directory that is not a repository it returns nothing,
+    and the scan used to come back clean - the worst possible answer, since it looks like a
+    pass. Outside a repository the filesystem is walked instead.
+    """
     repo = Path(repo_root)
     tracked = tracked_paths(repo)
+    if not tracked:
+        tracked = walk_paths(repo)
+        include_history = False
     historic: set[str] = set()
     if include_history:
         historic = {p for p in history_paths(repo) if p not in set(tracked)}

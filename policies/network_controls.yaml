@@ -23,3 +23,15 @@ controls:
     severity_if_violated: high
     remediation: Re-enable and re-apply the baseline.
     source: AWS Config s3-bucket-logging-enabled; cloudtrail-enabled
+
+  - id: TG-P13
+    name: Managed resources are not deleted outside Terraform
+    tier: optional
+    description: A resource under Terraform management removed by hand or by another tool.
+    evidence_source: terraform_plan_json
+    applies_when: a refresh-only plan JSON is available
+    decision: non_compliant if a managed resource is absent on refresh
+    expected_secure_result: every managed resource still exists
+    severity_if_violated: critical
+    remediation: Re-apply the baseline, then find out what removed it and why.
+    source: HashiCorp, Terraform state and drift documentation
