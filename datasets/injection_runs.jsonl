@@ -1,0 +1,2 @@
+{"scenario_id": "SG-001", "run_id": "SG-001-live", "action": "dry-run", "timestamp": "2026-10-13T22:37:29.291837+00:00", "region": "us-east-1", "dry_run": true, "detail": {"group_id": "sg-0154f42cdfb4f0cff", "port": 22, "cidr": "0.0.0.0/0"}}
+{"scenario_id": "SG-001", "run_id": "SG-001-live", "action": "injected", "timestamp": "2026-10-13T22:38:05.048047+00:00", "region": "us-east-1", "dry_run": false, "detail": {"group_id": "sg-0154f42cdfb4f0cff", "port": 22, "cidr": "0.0.0.0/0"}}

@@ -45,6 +45,30 @@ choco install terraform -y
 
 ---
 
+## 1b. Install the project
+
+Do this before anything that runs `terraguard`.
+
+```powershell
+cd $HOME\Desktop\Terragaurd\terraguard-ai
+python -m pip install -e ".[cli,scenarios]"
+```
+
+`pydantic` and `PyYAML` are required and come with the base install. The two extras are
+deliberate: `cli` adds `rich` for formatted tables, and the CLI falls back to plain text
+without it; `scenarios` adds `boto3`, which only the AWS injection scripts need. The scanner
+itself never calls AWS, which is how the entire offline corpus was produced on a machine with
+no SDK installed.
+
+Check it:
+
+```powershell
+terraguard --version
+python -m terraguard.cli scan . --fail-on high
+```
+
+---
+
 ## 2. Point the AWS CLI at your new account
 
 ```powershell

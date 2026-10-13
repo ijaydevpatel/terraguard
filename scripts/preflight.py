@@ -23,13 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Add the VPC attribute read the baseline plan needed
+COMMIT_MESSAGE = """Declare the dependencies the package actually imports
 
-A fifth AccessDenied, ec2:DescribeVpcAttribute, needed by the aws_vpc data source to read
-enableDnsHostnames. Same pattern as the first four and it sharpens the point: the policy was
-written from what the project creates, and a data source only reads, so data sources were
-invisible to that framing. Five denials so far, every one a read or a tag and none a create.
-Sibling VPC reads are added now rather than one failed plan at a time."""
+pyproject.toml had no dependencies field, so pip install -e . installed terraguard and nothing
+it imports, and a clean environment failed on the first import of pydantic. The versions were
+in requirements.txt all along, which is why this never surfaced in development. rich and boto3
+become extras, since the scanner degrades to plain text without one and never calls AWS at all
+without the other."""
 
 
 def say(text: str = "") -> None:

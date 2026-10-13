@@ -325,3 +325,21 @@ A fifth followed on the baseline plan: `ec2:DescribeVpcAttribute`, needed by the
 source to read `enableDnsHostnames`. It fits the same pattern and sharpens it. The policy was
 built from what the project creates, and data sources only read, so they were invisible to that
 framing entirely. Five denials, five reads or tags, zero creates.
+
+## 2026-10-14 - the package never declared its own dependencies
+
+**`pyproject.toml` had no `dependencies` field.** The versions lived in `requirements.txt`
+only, so `pip install -e .` installed the package and nothing it imports, and a clean
+environment died on the first `import pydantic`. Fixed by declaring them in the package
+metadata, with `rich` and `boto3` as extras because the scanner works without either.
+
+**This also corrects a claim I made about T092.** The fresh-clone check was reported as
+passing. It ran with `PYTHONPATH` set, inside an environment that already had pydantic
+installed from earlier work, so it never exercised installation at all. It proved the code
+ran from a clean *checkout*, not that it installed into a clean *environment*. Those are
+different things and I conflated them.
+
+The honest version: a fresh clone passes its tests when the dependencies happen to be present,
+and the packaging defect was found by a person running the documented install command on a
+machine that had never seen the project. That is the check T092 should have been.
+Evidence: `pyproject.toml`, install failure of 14 October 2026.

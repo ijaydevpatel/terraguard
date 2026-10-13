@@ -9,6 +9,22 @@ description = "Hybrid Terraform drift, state-handling and policy-control scanner
 requires-python = ">=3.11"
 readme = "README.md"
 
+# Declared here, not only in requirements.txt. Without this, `pip install -e .` installs the
+# package and none of what it imports, so a clean environment fails at the first import of
+# pydantic. requirements.txt pins exact versions for the recorded experiment; these ranges are
+# what the package needs to function.
+dependencies = [
+  "pydantic>=2.8,<3",
+  "PyYAML>=6,<7",
+]
+
+[project.optional-dependencies]
+# rich is imported behind a try/except, so the CLI degrades to plain text without it.
+cli = ["rich>=13.7,<14"]
+# Only the AWS-facing experiment scripts need an SDK. The scanner itself never calls AWS,
+# which is what let the whole offline corpus be produced on a machine with no SDK at all.
+scenarios = ["boto3>=1.34,<2"]
+
 [project.scripts]
 terraguard = "terraguard.cli:main"
 
