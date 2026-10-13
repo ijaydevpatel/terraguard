@@ -5,6 +5,7 @@ controls:
     tier: optional
     description: Administrative ports reachable from any address.
     evidence_source: terraform_plan_json
+    applies_to: [aws_vpc_security_group, aws_security_group, aws_s3_bucket_public_access_block, aws_s3_bucket_acl, aws_s3_bucket]
     applies_when: a plan JSON containing security group rules is available
     decision: non_compliant if a rule moves from a restricted CIDR to 0.0.0.0/0 or ::/0
     expected_secure_result: ingress restricted to a private range
@@ -17,6 +18,7 @@ controls:
     tier: optional
     description: Encryption or logging turned off outside Terraform.
     evidence_source: terraform_plan_json
+    applies_to: [aws_cloudtrail, aws_s3_bucket]
     applies_when: a plan JSON containing the relevant resources is available
     decision: non_compliant if encryption or logging moves from enabled to disabled
     expected_secure_result: both remain enabled
@@ -29,6 +31,7 @@ controls:
     tier: optional
     description: A resource under Terraform management removed by hand or by another tool.
     evidence_source: terraform_plan_json
+    applies_to: [aws_]
     applies_when: a refresh-only plan JSON is available
     decision: non_compliant if a managed resource is absent on refresh
     expected_secure_result: every managed resource still exists

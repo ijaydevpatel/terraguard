@@ -123,3 +123,29 @@ pipeline. Single region, single account.
 These are not deferred features. A 100-hour project that tried to include them would produce
 a shallow version of each, and the question being asked - can drift and state-handling
 findings be prioritised usefully - does not need any of them.
+
+## Four outcomes, and when the fourth one became real
+
+The design always specified four policy outcomes. For most of the project only three were
+reachable: compliant, non-compliant and indeterminate. `applies_when` was stored as prose and
+never evaluated, so a control about IAM read as compliant against a plan containing no IAM at
+all. That is false assurance arriving through a different door than the one `indeterminate`
+closes, and an external review found it rather than the test suite.
+
+Each control now carries `applies_to`, a list of resource-type prefixes, which is the machine
+readable half of `applies_when`. When the caller can enumerate what the target contains, a
+control whose subject is absent returns `not_applicable`. When the caller cannot, the control
+is assessed as before: a component that does not know the inventory should not be made to
+invent one.
+
+The distinction the four outcomes draw is between four different states of knowledge:
+
+| Outcome | Means |
+|---|---|
+| compliant | the control was assessed and the target satisfies it |
+| non_compliant | the control was assessed and the target violates it |
+| indeterminate | the control applies but the evidence to judge it was missing or unreadable |
+| not_applicable | the control does not bear on this target at all |
+
+Collapsing the last two into `compliant` is the failure this architecture exists to avoid, and
+it took a live review to notice that half of it was still theoretical.

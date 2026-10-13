@@ -100,3 +100,37 @@ def test_duplicate_control_ids_are_rejected(tmp_path):
     )
     with pytest.raises(ValueError):
         load_controls(tmp_path)
+
+
+def test_not_applicable_is_returned_when_the_subject_does_not_exist():
+    """The fourth outcome was defined and never reachable.
+
+    A control about IAM read as compliant on a plan containing no IAM at all, which is false
+    assurance arriving by a different route than the one `indeterminate` closes.
+    """
+    from terraguard.models import EvidenceSource, PolicyStatus
+    from terraguard.policy_engine import assess, load_controls
+
+    controls = load_controls(POLICIES, include_optional=True)
+    results = assess(
+        controls,
+        [],
+        available_evidence={EvidenceSource.TERRAFORM_PLAN_JSON},
+        observed_resource_types={"aws_s3_bucket"},
+    )
+    by_id = {r.control.id: r.status for r in results}
+    assert by_id["TG-P11"] is PolicyStatus.NOT_APPLICABLE
+    assert by_id["TG-P12"] is not PolicyStatus.NOT_APPLICABLE
+
+
+def test_applicability_is_skipped_when_the_inventory_is_unknown():
+    """A caller that cannot enumerate resources must not be forced to invent one."""
+    from terraguard.models import EvidenceSource, PolicyStatus
+    from terraguard.policy_engine import assess, load_controls
+
+    results = assess(
+        load_controls(POLICIES, include_optional=True),
+        [],
+        available_evidence={EvidenceSource.TERRAFORM_PLAN_JSON},
+    )
+    assert all(r.status is not PolicyStatus.NOT_APPLICABLE for r in results)

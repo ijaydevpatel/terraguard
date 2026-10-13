@@ -199,3 +199,82 @@ def test_allowlist_cannot_hide_a_committed_state_file(tmp_path):
 
     (tmp_path / ".terraguardignore").write_text("terraform.tfstate\n", encoding="utf-8")
     assert scan_paths(["terraform.tfstate"])
+
+
+def test_a_commented_out_backend_is_not_a_backend():
+    """It passed the static check because the parser searched for words, not for code."""
+    from terraguard.backend_scanner import scan_backend_config
+
+    commented = '# terraform {\n#   backend "s3" {\n#     encrypt = true\n#   }\n# }\n'
+    assert [f.control_id for f in scan_backend_config(commented)] == ["TG-P02"]
+
+
+def test_backend_is_discovered_outside_the_root(tmp_path):
+    """Terraform allows the block in any file; looking only at backend.tf missed them."""
+    from terraguard.backend_scanner import discover_backend_files
+
+    nested = tmp_path / "modules"
+    nested.mkdir()
+    (nested / "main.tf").write_text(
+        'terraform {\n  backend "local" {\n    path = "x"\n  }\n}\n', encoding="utf-8"
+    )
+    assert [p.name for p in discover_backend_files(tmp_path)] == ["main.tf"]
+
+
+def test_workflow_job_level_write_all_is_caught():
+    from terraguard.workflow_scanner import scan_workflow_text
+
+    yaml_text = (
+        "name: x\non: [push]\njobs:\n  a:\n    permissions: write-all\n    steps:\n      - run: x\n"
+    )
+    assert "TG-P08" in [f.control_id for f in scan_workflow_text(yaml_text, "w.yml")]
+
+
+def test_broad_artefact_upload_is_caught():
+    from terraguard.workflow_scanner import scan_workflow_text
+
+    yaml_text = (
+        "name: x\non: [push]\npermissions:\n  contents: read\njobs:\n  a:\n    steps:\n"
+        "      - uses: actions/upload-artifact@v4\n        with:\n          path: .\n"
+    )
+    assert "TG-P07" in [f.control_id for f in scan_workflow_text(yaml_text, "w.yml")]
+
+
+def test_plan_printed_to_the_job_log_is_caught():
+    from terraguard.workflow_scanner import scan_workflow_text
+
+    yaml_text = (
+        "name: x\non: [push]\npermissions:\n  contents: read\njobs:\n  a:\n    steps:\n"
+        "      - run: terraform show -json tfplan\n"
+    )
+    assert "TG-P06" in [f.control_id for f in scan_workflow_text(yaml_text, "w.yml")]
+
+
+def test_dangerous_port_change_is_not_operational_drift():
+    from terraguard.drift_normaliser import normalise_attribute
+    from terraguard.models import AttributeChange, NormalisedEvent
+
+    change = AttributeChange(
+        path="ingress.0.to_port",
+        before_category="numeric",
+        after_category="numeric",
+        before_redacted="443",
+        after_redacted="22",
+        sensitive=False,
+    )
+    assert normalise_attribute(change) is NormalisedEvent.PUBLIC_NETWORK_ACCESS
+
+
+def test_public_acl_is_not_operational_drift():
+    from terraguard.drift_normaliser import normalise_attribute
+    from terraguard.models import AttributeChange, NormalisedEvent
+
+    change = AttributeChange(
+        path="acl",
+        before_category="value",
+        after_category="value",
+        before_redacted="private",
+        after_redacted="public-read",
+        sensitive=False,
+    )
+    assert normalise_attribute(change) is NormalisedEvent.PUBLIC_NETWORK_ACCESS

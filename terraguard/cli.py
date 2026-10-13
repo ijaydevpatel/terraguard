@@ -162,13 +162,19 @@ def cmd_scan(args: argparse.Namespace) -> int:
     if (root / ".github" / "workflows").exists():
         findings += scan_workflows(root)
         sources.add(EvidenceSource.WORKFLOW)
-    backend = root / "backend.tf"
-    if backend.exists():
+    from .backend_scanner import discover_backend_files
+
+    for backend in discover_backend_files(root):
         findings += scan_backend_config(backend.read_text(encoding="utf-8"))
         sources.add(EvidenceSource.BACKEND_CONFIG)
 
     controls = load_controls(args.policies, include_optional=args.include_optional)
-    results = assess(controls, findings, available_evidence=sources)
+    results = assess(
+        controls,
+        findings,
+        available_evidence=sources,
+        observed_resource_types={f.resource_type for f in findings if f.resource_type},
+    )
     rows = _rows_from_findings(findings, sources, results, "scan", args.scenario_id or "scan")
     report = build_report(rows, _predictor(args))
     _render(report, args)
@@ -186,7 +192,17 @@ def cmd_analyse(args: argparse.Namespace) -> int:
     findings = normalise(extract_from_plan(plan), scenario_id=args.scenario_id)
     sources = {EvidenceSource.TERRAFORM_PLAN_JSON}
     controls = load_controls(args.policies, include_optional=args.include_optional)
-    results = assess(controls, findings, available_evidence=sources)
+    # Resource types come from the plan itself, not from the findings: a control is applicable
+    # because the resource exists, whether or not anything was wrong with it.
+    observed = {
+        r.get("type", "")
+        for key in ("resource_drift", "resource_changes")
+        for r in (plan.get(key) or [])
+        if r.get("type")
+    }
+    results = assess(
+        controls, findings, available_evidence=sources, observed_resource_types=observed or None
+    )
     rows = _rows_from_findings(findings, sources, results, "analyse", args.scenario_id or "analyse")
     report = build_report(rows, _predictor(args))
     _render(report, args)

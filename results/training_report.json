@@ -65,20 +65,20 @@
     },
     {
       "name": "logistic_regression",
-      "macro_f1": 0.7435,
-      "weighted_f1": 0.8082,
-      "accuracy": 0.8053,
+      "macro_f1": 0.7789,
+      "weighted_f1": 0.8323,
+      "accuracy": 0.8274,
       "per_class": {
         "high_or_critical": {
-          "precision": 0.8734,
+          "precision": 0.902,
           "recall": 0.8519,
-          "f1": 0.8625,
+          "f1": 0.8762,
           "support": 486
         },
         "medium": {
-          "precision": 0.5128,
-          "recall": 0.5714,
-          "f1": 0.5405,
+          "precision": 0.5682,
+          "recall": 0.7143,
+          "f1": 0.6329,
           "support": 105
         },
         "non_security_or_low": {
@@ -95,8 +95,8 @@
           15
         ],
         [
-          45,
-          60,
+          30,
+          75,
           0
         ],
         [
@@ -110,20 +110,20 @@
     },
     {
       "name": "random_forest",
-      "macro_f1": 0.8282,
-      "weighted_f1": 0.8794,
-      "accuracy": 0.885,
+      "macro_f1": 0.8198,
+      "weighted_f1": 0.874,
+      "accuracy": 0.8805,
       "per_class": {
         "high_or_critical": {
-          "precision": 0.8864,
+          "precision": 0.8814,
           "recall": 0.963,
-          "f1": 0.9231,
+          "f1": 0.9204,
           "support": 486
         },
         "medium": {
-          "precision": 0.7692,
-          "recall": 0.5714,
-          "f1": 0.6557,
+          "precision": 0.76,
+          "recall": 0.5429,
+          "f1": 0.6333,
           "support": 105
         },
         "non_security_or_low": {
@@ -140,8 +140,8 @@
           0
         ],
         [
-          45,
-          60,
+          48,
+          57,
           0
         ],
         [
@@ -155,65 +155,65 @@
     }
   ],
   "leakage": {
-    "macro_f1": 0.8231,
-    "accuracy": 0.8628,
+    "macro_f1": 0.8451,
+    "accuracy": 0.885,
     "folds_used": 3,
     "interpretation": "Measured under the same grouped folds. Compare against the ungrouped figure: if grouping alone suppresses the leak, that is because control ids are template-specific, so a held-out template contributes categories the model never saw in training."
   },
   "coefficients": {
     "high_or_critical": {
-      "resource_type=aws_s3_bucket_logging": -3.0942,
-      "resource_type=aws_iam_role_policy": 2.0458,
-      "path_mentions_permission": -1.7114,
-      "path_mentions_logging": -1.5223,
-      "sensitive_data_involved": 1.2256,
+      "resource_type=aws_s3_bucket_logging": -3.0897,
+      "resource_type=aws_iam_role_policy": 2.0476,
+      "path_mentions_permission": -1.7135,
+      "path_mentions_logging": -1.5165,
+      "sensitive_data_involved": 1.23,
+      "run_policy_status=non_compliant": 1.0122,
       "run_policy_status=compliant": -1.0054,
-      "run_policy_status=non_compliant": 0.9964,
-      "evidence_source=backend_config": 0.8966,
-      "evidence_source=terraform_plan_json": -0.8919,
-      "is_remote_drift": -0.8919
+      "evidence_source=backend_config": 0.91,
+      "resource_type=repository_file": 0.8989,
+      "evidence_source=terraform_plan_json": -0.8921
     },
     "medium": {
-      "path_mentions_permission": 2.3226,
-      "resource_type=aws_s3_bucket_logging": 2.1735,
-      "sensitive_data_involved": -1.2259,
-      "attribute_depth": 1.0981,
-      "evidence_source=backend_config": -0.8938,
-      "evidence_source=terraform_plan_json": 0.8242,
-      "is_remote_drift": 0.8242,
-      "resource_type=repository_file": -0.8202,
-      "path_mentions_logging": 0.6769,
-      "findings_in_run": -0.6478
+      "path_mentions_permission": 2.3209,
+      "resource_type=aws_s3_bucket_logging": 2.1596,
+      "sensitive_data_involved": -1.2285,
+      "attribute_depth": 1.0947,
+      "evidence_source=backend_config": -0.9068,
+      "resource_type=repository_file": -0.8377,
+      "evidence_source=terraform_plan_json": 0.8308,
+      "is_remote_drift": 0.8308,
+      "path_mentions_logging": 0.6744,
+      "findings_in_run": -0.6294
     },
     "non_security_or_low": {
-      "resource_type=aws_iam_role_policy": -1.7475,
-      "run_policy_status=compliant": 1.6125,
-      "run_policy_status=non_compliant": -1.6076,
-      "resource_type=aws_iam_role": 1.1966,
-      "findings_in_run": 0.9969,
-      "resource_type=aws_s3_bucket_logging": 0.9207,
-      "path_mentions_logging": 0.8454,
-      "attribute_depth": -0.7123,
-      "path_mentions_permission": -0.6112,
-      "detail_length": -0.5151
+      "resource_type=aws_iam_role_policy": -1.7496,
+      "run_policy_status=compliant": 1.6086,
+      "run_policy_status=non_compliant": -1.6085,
+      "resource_type=aws_iam_role": 1.1998,
+      "findings_in_run": 0.9861,
+      "resource_type=aws_s3_bucket_logging": 0.93,
+      "path_mentions_logging": 0.8421,
+      "attribute_depth": -0.7108,
+      "path_mentions_permission": -0.6074,
+      "detail_length": -0.5157
     }
   },
   "importances": {
-    "detail_length": 0.201,
-    "run_policy_status=compliant": 0.1056,
-    "run_policy_status=non_compliant": 0.1053,
-    "persistence_across_runs": 0.0797,
-    "evidence_source=repository": 0.0626,
-    "resource_type=repository_file": 0.0591,
-    "is_remote_drift": 0.056,
-    "path_mentions_permission": 0.054,
-    "evidence_source=terraform_plan_json": 0.0525,
-    "resource_type=aws_s3_bucket_logging": 0.033,
-    "assessment_coverage": 0.027,
-    "findings_in_run": 0.027,
-    "attribute_depth": 0.0233,
-    "path_mentions_logging": 0.0231,
-    "is_state_artefact": 0.0206
+    "detail_length": 0.1939,
+    "run_policy_status=non_compliant": 0.1044,
+    "run_policy_status=compliant": 0.1018,
+    "persistence_across_runs": 0.0829,
+    "path_mentions_permission": 0.0578,
+    "evidence_source=repository": 0.0577,
+    "resource_type=repository_file": 0.0538,
+    "is_remote_drift": 0.0521,
+    "assessment_coverage": 0.0506,
+    "evidence_source=terraform_plan_json": 0.0496,
+    "resource_type=aws_s3_bucket_logging": 0.0322,
+    "findings_in_run": 0.0246,
+    "attribute_depth": 0.0241,
+    "path_mentions_logging": 0.0228,
+    "is_state_artefact": 0.0225
   },
   "warnings": []
 }

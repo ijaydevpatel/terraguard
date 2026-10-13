@@ -14,7 +14,6 @@ Action for CI/CD demonstration.
 |---|---|---|
 | P0 | Repo hardening, environment, package skeleton | **done** |
 | P1 | Terraform baseline, evidence collector, redactor, fixtures | **done** (AWS apply pending) |
-| P2 | Plan parser, drift extraction, normalisation | next |
 | P3-P10 | Scanners, controls, dataset, models, reporting, CI | see `PROJECT_PLAN.md` |
 
 ## Install

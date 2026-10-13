@@ -45,6 +45,10 @@ class Control:
     severity_if_violated: Severity
     remediation: str
     source: str
+    # Resource-type prefixes this control governs. Empty means it applies to any target that
+    # supplies the right evidence. `applies_when` is prose for a human; this is the machine
+    # readable half, and without it the engine could never return not_applicable.
+    applies_to: tuple[str, ...] = ()
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> Control:
@@ -55,6 +59,7 @@ class Control:
             description=(raw.get("description") or "").strip(),
             evidence_source=EvidenceSource(raw["evidence_source"]),
             applies_when=raw.get("applies_when", ""),
+            applies_to=tuple(raw.get("applies_to") or ()),
             decision=raw.get("decision", ""),
             expected_secure_result=raw.get("expected_secure_result", ""),
             severity_if_violated=_SEVERITY.get(
@@ -102,8 +107,19 @@ def assess(
     findings: list[Finding],
     *,
     available_evidence: set[EvidenceSource],
+    observed_resource_types: set[str] | None = None,
 ) -> list[ControlAssessment]:
-    """Evaluate every control against the findings and the evidence actually collected."""
+    """Evaluate every control against the findings and the evidence actually collected.
+
+    `observed_resource_types` is what makes the fourth outcome real. Without it the engine
+    could only say compliant, non-compliant or indeterminate, so a control about security
+    group rules read as compliant on a plan containing no security groups at all. That is
+    false assurance of exactly the kind `indeterminate` was introduced to prevent, arriving
+    through a different door.
+
+    It stays optional because a caller that genuinely does not know the inventory should not
+    be forced to invent one; in that case the control is assessed as before.
+    """
     by_control: dict[str, list[Finding]] = {}
     for f in findings:
         if f.control_id:
@@ -131,6 +147,24 @@ def assess(
                         [f for f in matched if not f.raw.get("indeterminate")],
                     )
                 )
+            continue
+
+        if (
+            control.applies_to
+            and observed_resource_types is not None
+            and not any(
+                observed.startswith(prefix)
+                for prefix in control.applies_to
+                for observed in observed_resource_types
+            )
+        ):
+            out.append(
+                ControlAssessment(
+                    control,
+                    PolicyStatus.NOT_APPLICABLE,
+                    f"no {', '.join(control.applies_to)} resource in the target",
+                )
+            )
             continue
 
         if control.evidence_source not in available_evidence:

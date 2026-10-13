@@ -870,7 +870,13 @@ def main() -> int:
                 findings, sources = scan_directory(target)
                 fixture = f"corpus/{family['id']}/{n:02d}"
 
-            results = assess(controls, findings, available_evidence=sources)
+            results = assess(
+                controls,
+                findings,
+                available_evidence=sources,
+                observed_resource_types={f.resource_type for f in findings if f.resource_type}
+                or None,
+            )
             elapsed = (time.perf_counter() - clock) * 1000
             non_compliant = [r for r in results if r.status is PolicyStatus.NON_COMPLIANT]
             labels = classify_all(findings)

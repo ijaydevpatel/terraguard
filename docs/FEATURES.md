@@ -215,7 +215,7 @@ regulatory certification. Web dashboard. These are stated exclusions in §1.4, n
 | Public access block off read as housekeeping | Classified as non-security operational drift |
 | `id-token: write` reported as a leaked secret | False positive on the project's own secure workflow fixture |
 
-## Honest status, 14 October 2026
+## Honest status, 14 October 2026 (revised after external review)
 
 Detection, policy assessment and the deterministic severity baseline are built and tested.
 The models and the reporting layer are not.
@@ -229,3 +229,22 @@ That is still the single largest gap between what this document claims and what 
 demonstrated. Infrastructure drift is the project's headline claim, and every drift capability
 listed above has been exercised against fixtures only. Until T021 puts the baseline into a real
 account, the drift half of RQ1 rests on synthetic evidence.
+
+## Revised after external review, 14 October 2026
+
+An independent review found defects that a passing test suite had not. They are listed in
+`notes/decisions.md` and summarised here because this register is where someone looks to find
+out what the tool can do.
+
+| Was claimed | Actually |
+|---|---|
+| Redaction covers the plan | `variables` and `output_changes` leaked an ordinary password; fixed, with a structural gate added |
+| Four policy outcomes | three were reachable; `not_applicable` now returns when a control's subject is absent |
+| Workflow scanning complete | job-level scopes, broad artefact paths and a plain `terraform show -json` were missed; all now covered |
+| Severity classifies dangerous drift | port, protocol and ACL changes read as operational drift; now resource-aware |
+| Backend parsing | only a root-level `backend.tf`, and a commented-out block passed; now discovered tree-wide with comments stripped |
+| Sixteen model features | three were constant, so results used thirteen; joins fixed and figures regenerated |
+
+Current model figures: Logistic Regression 0.7789 macro F1,
+Random Forest 0.8198. Both measure agreement with the project's own
+rubric on a largely synthetic corpus, which is not the same as improving real prioritisation.

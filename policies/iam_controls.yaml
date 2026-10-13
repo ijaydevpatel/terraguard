@@ -17,6 +17,7 @@ controls:
     tier: optional
     description: An action or resource widened to "*" grants far more than intended.
     evidence_source: terraform_plan_json
+    applies_to: [aws_iam]
     applies_when: a plan JSON containing IAM policy documents is available
     decision: non_compliant if an action or resource becomes a wildcard
     expected_secure_result: explicit actions on explicit resources

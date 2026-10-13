@@ -51,6 +51,28 @@ def _matches(path: str, hints: tuple[str, ...]) -> bool:
     return any(h in lowered for h in hints)
 
 
+# Ports that expose an administrative or database service. Opening one of these on a rule
+# that is already reachable from the internet is an exposure even though no CIDR changed,
+# which is the case the review found being filed as ordinary operational drift.
+_SENSITIVE_PORTS = {22, 23, 445, 1433, 1521, 3306, 3389, 5432, 5984, 6379, 9200, 11211, 27017}
+
+# Canned ACLs that grant access to anyone. "private" is the only one that does not.
+_PUBLIC_ACLS = {
+    "public-read",
+    "public-read-write",
+    "authenticated-read",
+    "aws-exec-read",
+    "log-delivery-write",
+}
+
+
+def _port_of(value: object) -> int | None:
+    try:
+        return int(str(value))
+    except (TypeError, ValueError):
+        return None
+
+
 def normalise_attribute(change: AttributeChange) -> NormalisedEvent | None:
     """Classify a single attribute change.
 
@@ -59,6 +81,33 @@ def normalise_attribute(change: AttributeChange) -> NormalisedEvent | None:
     findings for changes that improved the posture.
     """
     before, after, path = change.before_category, change.after_category, change.path
+    lowered = path.lower()
+
+    # A canned ACL moving off "private" grants access to principals outside the account. It
+    # categorises as value -> value, so every generic rule below misses it.
+    if "acl" in lowered and not _matches(path, ("block_public", "public_access")):
+        raw_after = str(change.after_redacted or "").strip().lower()
+        raw_before = str(change.before_redacted or "").strip().lower()
+        if raw_after in _PUBLIC_ACLS and raw_before not in _PUBLIC_ACLS:
+            return NormalisedEvent.PUBLIC_NETWORK_ACCESS
+        return None
+
+    # A port or protocol change on a rule that is already open to the world exposes a new
+    # service without touching the CIDR. The categoriser sees numeric -> numeric and the
+    # path is not a network hint, so this fell through to operational drift.
+    if lowered.endswith(("from_port", "to_port", "port")):
+        new_port, old_port = _port_of(change.after_redacted), _port_of(change.before_redacted)
+        if new_port in _SENSITIVE_PORTS and old_port != new_port:
+            return NormalisedEvent.PUBLIC_NETWORK_ACCESS
+        return NormalisedEvent.OPERATIONAL_DRIFT
+
+    if lowered.endswith(("protocol", "ip_protocol")):
+        raw_after = str(change.after_redacted or "").strip().lower()
+        raw_before = str(change.before_redacted or "").strip().lower()
+        # "-1" is every protocol. Widening to it is an exposure.
+        if raw_after in ("-1", "all") and raw_before not in ("-1", "all"):
+            return NormalisedEvent.PUBLIC_NETWORK_ACCESS
+        return NormalisedEvent.OPERATIONAL_DRIFT
 
     if _matches(path, _NETWORK_HINTS):
         if after == "public" and before != "public":

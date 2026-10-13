@@ -85,12 +85,24 @@ def parse_plan(plan: dict[str, Any]) -> list[DriftRecord]:
 
 
 def raw_changes(plan: dict[str, Any]) -> list[tuple[dict[str, Any], bool]]:
-    """Yield ``(item, is_remote_drift)`` pairs so the extractor can diff before/after."""
+    """Yield ``(item, is_remote_drift)`` pairs so the extractor can diff before/after.
+
+    Both collections are validated rather than trusted. A plan whose `resource_drift` is an
+    object, or whose entries are strings, used to raise here. A scanner that raises on an odd
+    document fails open in practice: the step that was meant to inspect it does not run, and
+    nothing downstream notices the difference between "nothing wrong" and "never looked".
+
+    Anything that is not a mapping is skipped. Refusing part of a document is a defensible
+    answer; crashing on all of it is not.
+    """
     pairs: list[tuple[dict[str, Any], bool]] = []
-    for item in plan.get("resource_drift") or []:
-        pairs.append((item, True))
-    for item in plan.get("resource_changes") or []:
-        pairs.append((item, False))
+    for collection, remote in (("resource_drift", True), ("resource_changes", False)):
+        items = plan.get(collection)
+        if not isinstance(items, list):
+            continue
+        for item in items:
+            if isinstance(item, dict):
+                pairs.append((item, remote))
     return pairs
 
 

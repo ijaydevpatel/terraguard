@@ -14,10 +14,17 @@ than guessing, which is what feeds the Indeterminate policy outcome.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from .models import EvidenceSource, Finding, NormalisedEvent
 
-__all__ = ["parse_backend_block", "scan_backend_config", "scan_backend_live"]
+__all__ = [
+    "parse_backend_block",
+    "scan_backend_config",
+    "scan_backend_live",
+    "discover_backend_files",
+    "strip_comments",
+]
 
 _BACKEND_RE = re.compile(r'backend\s+"(?P<kind>\w+)"\s*\{(?P<body>[^}]*)\}', re.DOTALL)
 _ATTR_RE = re.compile(r'(?P<key>\w+)\s*=\s*"?(?P<value>[^"\n]+)"?')
@@ -54,8 +61,61 @@ def _f(
     )
 
 
+def strip_comments(text: str) -> str:
+    """Remove HCL comments before parsing.
+
+    A fully commented-out backend block passed the static check, because the parser only ever
+    searched for the words. A commented backend is not a backend: the state is local and the
+    file merely looks reassuring, which is the worst combination.
+    """
+    out: list[str] = []
+    in_block_comment = False
+    for line in text.splitlines():
+        if in_block_comment:
+            if "*/" in line:
+                line = line.split("*/", 1)[1]
+                in_block_comment = False
+            else:
+                continue
+        while "/*" in line:
+            head, rest = line.split("/*", 1)
+            if "*/" in rest:
+                line = head + rest.split("*/", 1)[1]
+            else:
+                line = head
+                in_block_comment = True
+                break
+        for marker in ("#", "//"):
+            if marker in line:
+                line = line.split(marker, 1)[0]
+        out.append(line)
+    return "\n".join(out)
+
+
+def discover_backend_files(root: str | Path) -> list[Path]:
+    """Every .tf file that declares a backend, anywhere in the tree.
+
+    Terraform allows the block in any file in the module, so looking only for a root-level
+    `backend.tf` meant a project that put it in `main.tf`, or in a subdirectory, was reported
+    as having no backend evidence at all.
+    """
+    root = Path(root)
+    found: list[Path] = []
+    for path in sorted(root.rglob("*.tf")):
+        if any(part in {".terraform", "corpus", ".git"} for part in path.parts):
+            continue
+        try:
+            body = strip_comments(path.read_text(encoding="utf-8", errors="ignore"))
+        except OSError:
+            continue
+        if "backend" in body and "terraform" in body:
+            found.append(path)
+    return found
+
+
 def scan_backend_config(text: str) -> list[Finding]:
     """Static assessment of a backend block."""
+    text = strip_comments(text)
     attrs = parse_backend_block(text)
     if attrs is None:
         return [

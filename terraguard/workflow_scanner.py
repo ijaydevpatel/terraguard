@@ -86,6 +86,35 @@ def scan_workflow_text(text: str, name: str = "workflow.yml") -> list[Finding]:
     has_job = any(
         isinstance(j, dict) and "permissions" in j for j in (doc.get("jobs") or {}).values()
     )
+    # Per-job evaluation. A job without its own block inherits the top level, and if there is
+    # no top level it inherits the repository default. Checking only the top level missed a
+    # job-level write-all entirely, and missed an unscoped job sitting beside a scoped one,
+    # which is worse because the file looks careful.
+    jobs = {k: v for k, v in (doc.get("jobs") or {}).items() if isinstance(v, dict)}
+    for job_name, job in jobs.items():
+        scope = job.get("permissions")
+        if scope in ("write-all", "read-all"):
+            findings.append(
+                _finding(
+                    name,
+                    "TG-P08",
+                    NormalisedEvent.PRIVILEGE_EXPANSION,
+                    f"job {job_name} sets permissions to {scope}",
+                    "Grant only the scopes that job needs.",
+                )
+            )
+        elif "permissions" not in job and has_job and not has_top:
+            findings.append(
+                _finding(
+                    name,
+                    "TG-P08",
+                    NormalisedEvent.PRIVILEGE_EXPANSION,
+                    f"job {job_name} has no permissions block while another job does, so it "
+                    "falls back to the repository default",
+                    "Give every job an explicit scope, or set a restrictive top-level default.",
+                )
+            )
+
     if not has_top and not has_job:
         findings.append(
             _finding(
@@ -112,6 +141,32 @@ def scan_workflow_text(text: str, name: str = "workflow.yml") -> list[Finding]:
         with_block = str(step.get("with") or "")
         run = str(step.get("run") or "")
 
+        # A broad upload path sweeps up whatever is in the working directory, including a
+        # plan or state file written earlier in the job. Matching only on explicit state
+        # hints missed `path: .` entirely, which is the widest possible upload.
+        # Read the mapping rather than its repr. `str({"path": "."})` is "{'path': '.'}",
+        # so a regex written for YAML text matches nothing here, which is why the widest
+        # possible upload went unreported.
+        with_map = step.get("with") if isinstance(step.get("with"), dict) else {}
+        upload_paths = [
+            line.strip() for line in str(with_map.get("path") or "").splitlines() if line.strip()
+        ]
+        broad_path = any(
+            p in (".", "./", "*", "./*", "**") or p.startswith("${{ github.workspace")
+            for p in upload_paths
+        )
+        if any(a in uses for a in _ARTEFACT_ACTIONS) and broad_path:
+            findings.append(
+                _finding(
+                    name,
+                    "TG-P07",
+                    NormalisedEvent.INSECURE_STATE_HANDLING,
+                    "an artefact upload covers the whole working directory, which can include "
+                    "a plan or state file written earlier in the job",
+                    "Upload named files only, never a directory glob.",
+                )
+            )
+
         if any(a in uses for a in _ARTEFACT_ACTIONS) and any(
             h in with_block.lower() for h in _STATE_HINTS
         ):
@@ -136,6 +191,22 @@ def scan_workflow_text(text: str, name: str = "workflow.yml") -> list[Finding]:
                     "Cache only provider plugins, never state or plans.",
                 )
             )
+        # `terraform show -json` with no redirection prints the whole plan to the job log,
+        # where it is readable by anyone who can see the run. Requiring cat or echo as well
+        # meant the most direct way of doing it went unreported.
+        shows_plan = "terraform show -json" in run.lower()
+        redirected = ">" in run or "|" in run
+        if shows_plan and not redirected:
+            findings.append(
+                _finding(
+                    name,
+                    "TG-P06",
+                    NormalisedEvent.SENSITIVE_DATA_EXPOSURE,
+                    "terraform show -json prints the plan to the job log",
+                    "Redirect to a file and run it through the redactor before publishing.",
+                )
+            )
+
         if (
             run
             and any(h in run.lower() for h in ("tfplan.json", "terraform show -json"))

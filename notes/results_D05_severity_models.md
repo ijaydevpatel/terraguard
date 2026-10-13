@@ -14,8 +14,8 @@ remote, whether sensitive data was involved, run level counts. They never see `c
 
 | Model | Macro F1 | Weighted F1 | Accuracy | Recall on high/critical |
 |---|---:|---:|---:|---:|
-| Logistic Regression | 0.7435 | 0.8082 | 0.8053 | 0.8519 |
-| Random Forest | 0.8282 | 0.8794 | 0.885 | 0.963 |
+| Logistic Regression | 0.7789 | 0.8323 | 0.8274 | 0.8519 |
+| Random Forest | 0.8198 | 0.874 | 0.8805 | 0.963 |
 
 Logistic Regression is ahead on macro F1 and Random Forest is ahead on recall for the class
 that matters most. That is a real trade and not a tie: the forest catches more severe findings
@@ -40,8 +40,8 @@ Logistic Regression, same data, four ways:
 
 | Split | Rule inputs withheld | Rule inputs included |
 |---|---:|---:|
-| Grouped by template | 0.7435 | 0.8231 |
-| Ungrouped (random) | 0.9279 | 1.0 |
+| Grouped by template | 0.7789 | 0.8451 |
+| Ungrouped (random) | 0.9294 | 1.0 |
 
 On the small corpus the rule inputs made no difference under grouping, and the conclusion
 recorded at the time was that grouping alone defeated the leak. **That conclusion was an
@@ -104,7 +104,7 @@ informative features rather than sixteen.
 | `sensitive_data_involved` | looked for a `[REDACTED]` marker that never appears in a detail string |
 
 With the joins fixed and the data regenerated, Logistic Regression moved from 0.6699 to
-0.7435 and Random Forest from 0.5482 to 0.8282, which reverses the ordering
+0.7789 and Random Forest from 0.5482 to 0.8198, which reverses the ordering
 reported in the previous revision. The earlier claim that Logistic Regression led was an
 artefact of a broken feature pipeline, not a finding about the models.
 

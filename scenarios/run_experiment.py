@@ -149,7 +149,12 @@ def run(scenario_id: str, *, plan_json: Path | None, run_id: str, dry_run: bool)
     # eight controls and the generator thirteen, so rows from the two paths were not
     # comparable and assessment_coverage meant different things in each.
     controls = load_controls(ROOT / "policies", include_optional=True)
-    results = assess(controls, findings, available_evidence=sources)
+    results = assess(
+        controls,
+        findings,
+        available_evidence=sources,
+        observed_resource_types={f.resource_type for f in findings if f.resource_type} or None,
+    )
     elapsed_ms = (time.perf_counter() - clock) * 1000
 
     non_compliant = [r for r in results if r.status is PolicyStatus.NON_COMPLIANT]

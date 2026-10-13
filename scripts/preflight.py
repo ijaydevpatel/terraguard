@@ -23,14 +23,14 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Fix the defects an external review found
+COMMIT_MESSAGE = """Close the review findings that were mine to close
 
-Redaction let an ordinary password through: sensitive-key context was dropped the moment the
-value was nested, output_changes was never redacted, and the final gate only matched secret
-shapes, which a password does not have. Three of sixteen model features were constant because
-the loader read columns no writer produced, so every reported figure used thirteen features and
-the model ordering reverses once fixed. The strictest gate could never fail, the two collection
-paths assessed different control sets, and no fitted estimator was ever saved."""
+Severity is resource aware now, so a port or protocol change on an exposed rule and an ACL
+leaving private are exposures rather than housekeeping. The policy engine evaluates
+applicability, so not_applicable is returned instead of a control about IAM reading compliant
+against a plan containing none. Workflow checks cover per-job scopes, uploads spanning the
+working directory and an unredirected terraform show -json. Backend discovery walks the tree
+and strips comments, and a robustness suite of 44 malformed plans found two parser crashes."""
 
 
 def say(text: str = "") -> None:

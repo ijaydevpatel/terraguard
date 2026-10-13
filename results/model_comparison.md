@@ -13,8 +13,8 @@ switches on.
 
 | Model | Macro F1 | Weighted F1 | Accuracy | Recall on high/critical |
 |---|---:|---:|---:|---:|
-| logistic_regression | 0.7435 | 0.8082 | 0.8053 | 0.8519 |
-| random_forest | 0.8282 | 0.8794 | 0.885 | 0.963 |
+| logistic_regression | 0.7789 | 0.8323 | 0.8274 | 0.8519 |
+| random_forest | 0.8198 | 0.874 | 0.8805 | 0.963 |
 
 ## The deterministic baseline is not in that table, on purpose
 
@@ -31,8 +31,8 @@ rules-versus-models claim belongs in the results chapter yet.
 
 | Split | Rule inputs withheld | Rule inputs included |
 |---|---:|---:|
-| grouped by template | 0.7435 | 0.8231 |
-| ungrouped (random) | 0.9279 | 1.0 |
+| grouped by template | 0.7789 | 0.8451 |
+| ungrouped (random) | 0.9294 | 1.0 |
 
 Grouping, not the feature exclusion, is what defeats the leak: control ids are
 confounded with scenario templates, so a held-out template brings categories the model
