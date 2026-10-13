@@ -24,7 +24,7 @@ def parse_args(scenario_id: str, description: str) -> argparse.Namespace:
     p.add_argument("--scenario-id", default=scenario_id)
     p.add_argument("--run-id", required=True, help="unique id for this observation")
     p.add_argument("--profile", default="terraguard")
-    p.add_argument("--region", default="ap-southeast-2")
+    p.add_argument("--region", default="us-east-1")
     p.add_argument("--dry-run", action="store_true", help="verify only, change nothing")
     return p.parse_args()
 

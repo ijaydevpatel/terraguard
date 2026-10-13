@@ -53,7 +53,7 @@ actually leaves the machine.
 ## Cloud resources and cost
 
 Experiments will run in a dedicated AWS sandbox account holding nothing else, in
-`ap-southeast-2`, tagged `environment = test`. Budget alarms are defined as code at $5 and
+`us-east-1`, tagged `environment = test`. Budget alarms are defined as code at $5 and
 $15. Everything is destroyed at the W12 teardown, and zero spend is confirmed and recorded.
 
 `prevent_destroy` is deliberately switched off on the state bucket. Production guidance would

@@ -80,7 +80,7 @@ The native lock also removes a resource, its IAM surface and its cost from the e
 Terraform floor raised from 1.7 to **1.11**.
 Evidence: `terraform/bootstrap/state_backend.tf`, `outputs.tf`, `terraform/baseline/backend.tf`.
 
-**`ap-southeast-2` (Sydney) retained even though a New Zealand region now exists.**
+**`ap-southeast-2` (Sydney) retained even though a New Zealand region now exists.** *Superseded on 14 October 2026, see below.*
 AWS opened `ap-southeast-6` (Auckland) on 2 September 2025, so the earlier justification -
 "nearest mainstream region" - was wrong. Sydney is kept on different grounds: broader service
 catalogue and substantially more documentation, which outweighs the latency saving for a
@@ -252,3 +252,24 @@ genuinely different findings on one id. This inflates `persistence_across_runs` 
 affected rows. Recorded as a defect (T124) rather than dropped, because discarding either row
 would discard a real finding.
 Evidence: `results/duplicate_audit.json`.
+
+---
+
+## 2026-10-14 - region changed to us-east-1
+
+**The deployment region moved from `ap-southeast-2` to `us-east-1`.**
+Alternative: keep Sydney, which the earlier entry argued for on service catalogue breadth and
+documentation volume. Rejected because the account owner works in us-east-1, and the earlier
+reasoning never weighed who would actually operate the environment. A region chosen for a
+marginal service-maturity argument is worse than one the operator is set up for, particularly
+in a project where every AWS step is run by hand.
+
+The change touches the live stacks, the bootstrap variables, the injection helpers and the
+pipeline. The synthetic fixtures still carry the old region string, deliberately: they are test
+data whose region is arbitrary, and rewriting them would churn the dataset and the committed
+results for no gain.
+
+Consequence for the write-up: latency is no longer a stated consideration, and the limitations
+section should say the experiment ran in a single region without claiming that region was
+selected on technical grounds.
+Evidence: `terraform/bootstrap/variables.tf`, `terraform/baseline/variables.tf`, `docs/RUNBOOK.md`.

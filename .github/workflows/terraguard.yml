@@ -91,7 +91,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ap-southeast-2
+          aws-region: us-east-1
 
       - name: Refresh-only plan
         working-directory: terraform/baseline

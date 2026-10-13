@@ -100,8 +100,6 @@
       "Action": [
         "budgets:ViewBudget",
         "budgets:ModifyBudget",
-        "budgets:DescribeBudget",
-        "budgets:CreateBudgetAction",
         "ce:GetCostAndUsage"
       ],
       "Resource": "*"
@@ -109,7 +107,9 @@
     {
       "Sid": "Identity",
       "Effect": "Allow",
-      "Action": ["sts:GetCallerIdentity"],
+      "Action": [
+        "sts:GetCallerIdentity"
+      ],
       "Resource": "*"
     },
     {

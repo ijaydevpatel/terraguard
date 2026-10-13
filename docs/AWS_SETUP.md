@@ -29,11 +29,12 @@ rather than generating a bill. Keep the budget alarms and destroy resources betw
 
 ## 2. Region lock
 
-Pick one region and never deviate: **`ap-southeast-2` (Sydney)** throughout this repo.
+Pick one region and never deviate: **`us-east-1`** throughout this repo.
 
 AWS opened **`ap-southeast-6` (Asia Pacific, New Zealand)** in Auckland on 2 September 2025,
-so Sydney is no longer the closest region. Sydney is still the deliberate choice here: it has
-the broader service catalogue and far more documentation and community material, which matters
+us-east-1 is the region the account owner works in. An earlier revision argued for a Sydney
+region on service maturity grounds, but that reasoning never weighed who would be running the
+commands, and every AWS step here is run by hand.
 more for a research prototype than the small latency saving. Recorded as a decision rather
 than left as an unexamined default.
 
@@ -51,7 +52,7 @@ first `apply`, so there is nothing to click:
 
 Set `budget_alert_email` in `terraform/bootstrap/terraform.tfvars` to an address you read.
 Budgets is a global service, so these are created in `us-east-1` via an aliased provider even
-though everything else lives in `ap-southeast-2`.
+though everything else lives in `us-east-1`.
 
 ## 4. Local credentials
 

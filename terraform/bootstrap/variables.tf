@@ -2,14 +2,17 @@ variable "aws_region" {
   description = <<-EOT
     Single region for the whole research environment.
 
-    ap-southeast-2 (Sydney) is chosen over ap-southeast-6 (New Zealand, launched
-    September 2025) for service maturity and breadth: Sydney has the longer service
-    catalogue and the deeper body of documentation, which matters more for a research
-    prototype than the ~25 ms of latency saved. Recorded as a deliberate choice rather
-    than a default.
+    us-east-1 is the region the account owner works in. An earlier revision argued for a
+    Sydney region on service maturity and latency grounds, but that reasoning never weighed
+    who would actually operate the environment, and every AWS step in this project is run by
+    hand. A region the operator is set up for beats a marginally better one they are not.
+
+    Recorded as a deliberate choice rather than a default. The limitations section should say
+    the experiment ran in a single region, without claiming the region was selected on
+    technical grounds.
   EOT
   type        = string
-  default     = "ap-southeast-2"
+  default     = "us-east-1"
 }
 
 variable "state_bucket_name" {

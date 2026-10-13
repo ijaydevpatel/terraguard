@@ -40,7 +40,7 @@ winget install --id Amazon.AWSCLI --scope machine
 aws configure
 ```
 
-Enter the access key and secret for the IAM user you created, region `ap-southeast-2`, output
+Enter the access key and secret for the IAM user you created, region `us-east-1`, output
 `json`. Confirm it works and note the account id:
 
 ```powershell

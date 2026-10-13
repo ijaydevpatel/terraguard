@@ -4,7 +4,7 @@ terraform {
   backend "s3" {
     bucket = "REPLACE_WITH_BOOTSTRAP_OUTPUT"
     key    = "baseline/terraform.tfstate"
-    region = "ap-southeast-2"
+    region = "us-east-1"
 
     encrypt = true
 

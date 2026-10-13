@@ -23,13 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Gate the repository with the tool and generate the evidence set
+COMMIT_MESSAGE = """Move the environment to us-east-1 and fix an invalid IAM action
 
-The pipeline now runs the scanner against this repository on every push, with a second job for
-live drift that skips cleanly when no AWS role is configured. Figures, the control traceability
-table and the research question mapping are all generated from committed artefacts rather than
-written by hand, so none of them can drift from the numbers. The traceability table reports
-TG-P05 as having no run behind it, which is the honest state until the baseline is deployed."""
+The deployment region follows the account owner rather than the earlier service-maturity
+argument, which never weighed who runs the commands. Seven live stacks, the pipeline and the
+docs change; the synthetic fixtures keep the old region on purpose so the dataset and committed
+results do not churn. The local developer policy also named budgets:DescribeBudget, which AWS
+rejects because no such action exists, and budgets:CreateBudgetAction, which nothing here uses."""
 
 
 def say(text: str = "") -> None:
