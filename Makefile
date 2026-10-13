@@ -28,3 +28,7 @@ demo:
 
 clean:
 	rm -rf evidence .pytest_cache .ruff_cache **/__pycache__
+
+demo-leak:
+	# Proof the tool catches a real credential and stops the commit.
+	python3 scripts/demo_leak_prevention.py

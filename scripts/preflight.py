@@ -23,13 +23,14 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Add a reviewed allowlist for the project's own example secrets
+COMMIT_MESSAGE = """Demonstrate that a real credential is caught and the commit blocked
 
-Running the tool against this repository reported six values under sensitive key names, all of
-them in documentation that explains the rule or tests that exercise it. They are true positives
-by the rule's own definition, so the rule stays strict and a .terraguardignore allowlist carries
-the accepted paths with a written reason for each. The allowlist cannot suppress a committed
-state or plan file, which is the finding the tool exists for, and a test holds that line."""
+A detection count over generated scenarios shows internal consistency and nothing more, so it
+is not evidence the tool stops a leak. demo_leak_prevention.py plants an AWS key and a state
+file in a throwaway repository and checks four things: both are found and the gate fails, the
+report never reprints either value, the pre-commit guard stops the commit landing, and a
+cleaned repository commits and scans clean. A test runs it, so the claim is checked in CI
+rather than being a paragraph in the write-up."""
 
 
 def say(text: str = "") -> None:

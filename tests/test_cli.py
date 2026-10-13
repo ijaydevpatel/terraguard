@@ -108,3 +108,25 @@ def test_csv_report_is_written_to_disk(tmp_path):
 
 def test_scan_of_a_missing_directory_is_a_usage_error(tmp_path):
     assert main(["scan", str(tmp_path / "nope")]) == 2
+
+
+def test_leak_prevention_demonstration_passes():
+    """The end-to-end proof runs in CI, not just by hand.
+
+    Detection counts over generated scenarios measure internal consistency. This asserts the
+    claim that actually matters: a real credential is found, is never reprinted, and the
+    commit carrying it does not land.
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    proc = subprocess.run(
+        [sys.executable, str(root / "scripts/demo_leak_prevention.py")],
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "8/8 checks passed" in proc.stdout
