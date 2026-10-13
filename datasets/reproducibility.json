@@ -25,5 +25,13 @@
     "key": "baseline/terraform.tfstate",
     "encrypted": true,
     "locking": "s3 native use_lockfile"
+  },
+  "terraform_providers": {
+    "hashicorp/aws": "5.100.0",
+    "hashicorp/random": "3.9.1"
+  },
+  "provider_constraints": {
+    "hashicorp/aws": "~> 5.55",
+    "hashicorp/random": "~> 3.6"
   }
 }

@@ -16,7 +16,9 @@ tfplan.json
 !terraform/fixtures/**/*.tfstate.backup
 !terraform/fixtures/**/tfplan.json
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl is deliberately NOT ignored. It pins the exact provider
+# builds, which is what makes the experiment reproducible, and T115 cites it. HashiCorp's
+# own guidance is to commit it.
 crash.log
 override.tf
 override.tf.json

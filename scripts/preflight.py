@@ -23,14 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Point the baseline at the live state backend
+COMMIT_MESSAGE = """Stop ignoring the Terraform lock file
 
-The bootstrap stack applied: encrypted versioned bucket with public access blocked and a
-TLS-only policy, two budget alarms, the GitHub OIDC provider and the CI role. backend.tf now
-names the real bucket and the baseline scans clean against the project's own TG-P02, TG-P03 and
-TG-P04 controls, which is the first time those have been checked against something deployed
-rather than a fixture. Reproducibility record updated with the region, Terraform build and
-backend settings."""
+.gitignore excluded .terraform.lock.hcl while T115 cited that file as part of the
+reproducibility capture, so the record claimed something the repository did not contain. The
+lock file pins the exact provider builds, which is the whole point, and HashiCorp's guidance is
+to commit it. Provider versions resolved on first init are recorded too: aws 5.100.0 under the
+~> 5.55 constraint, random 3.9.1."""
 
 
 def say(text: str = "") -> None:
