@@ -320,3 +320,8 @@ least-privilege and one that works. It belongs in the discussion: a least-privil
 cannot be written from the service documentation alone, and the only way to find the real
 boundary is to run it.
 Evidence: `docs/iam/local_dev_policy.json`, apply failure of 14 October 2026.
+
+A fifth followed on the baseline plan: `ec2:DescribeVpcAttribute`, needed by the `aws_vpc` data
+source to read `enableDnsHostnames`. It fits the same pattern and sharpens it. The policy was
+built from what the project creates, and data sources only read, so they were invisible to that
+framing entirely. Five denials, five reads or tags, zero creates.
