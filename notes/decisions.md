@@ -294,3 +294,29 @@ Deny on EC2 instances, RDS, EKS, ElastiCache, SageMaker and Redshift is what bou
 exposure those leave open, and the limitations section should say so rather than claiming the
 policy is tight everywhere.
 Evidence: `docs/iam/local_dev_policy.json`.
+
+## 2026-10-14 - the least-privilege policy met a real account
+
+**Four missing actions, found by applying rather than by reading.**
+The developer policy had been written from the service documentation and never exercised. The
+first `terraform apply` failed on four `AccessDenied` errors at once: `budgets:TagResource`,
+`iam:TagOpenIDConnectProvider`, `s3:GetBucketAcl`, and the same tagging gap on the second
+budget.
+
+Two things are worth recording from that.
+
+Every failure was a **tagging or read** action, not a create or delete. The policy had been
+assembled by listing what the project does - create a bucket, create a role, create a budget -
+and that framing misses what the provider does around each call. Terraform reads a long tail of
+S3 sub-resources on refresh whether or not the configuration sets them, because it cannot tell
+"not configured" from "not permitted to look", and it tags almost everything it creates.
+
+The fix added the whole class rather than the four that happened to surface first. Patching one
+action per failed apply would have been several more rounds and would have left the policy
+shaped by the order AWS happens to evaluate permissions in.
+
+This is the strongest evidence in the project for the gap between a policy that reads as
+least-privilege and one that works. It belongs in the discussion: a least-privilege policy
+cannot be written from the service documentation alone, and the only way to find the real
+boundary is to run it.
+Evidence: `docs/iam/local_dev_policy.json`, apply failure of 14 October 2026.

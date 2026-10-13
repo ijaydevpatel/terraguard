@@ -1,6 +1,18 @@
 # Runbook
 
-Every command you need, in order. Windows PowerShell unless stated.
+Every command you need, in order.
+
+**These are PowerShell commands.** `$HOME` is PowerShell syntax and does nothing in Command
+Prompt, so either open PowerShell or substitute `%USERPROFILE%` and use `cd /d` throughout.
+Mixing the two is the quickest way to get "The system cannot find the path specified".
+
+| | PowerShell | Command Prompt |
+|---|---|---|
+| Home directory | `$HOME` | `%USERPROFILE%` |
+| Change drive and directory | `cd` | `cd /d` |
+| Last exit code | `$LASTEXITCODE` | `%ERRORLEVEL%` |
+
+The project folder is spelled `Terragaurd` on disk. That is not a typo in this document.
 
 Nothing here needs me. Credentials never leave your machine and are never pasted into a
 chat, which is why the AWS steps are yours to run rather than mine.

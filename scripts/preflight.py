@@ -23,13 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Scope iam:PassRole instead of dismissing the console warning
+COMMIT_MESSAGE = """Add the actions a real apply needed, not the ones the docs implied
 
-The policy validator flagged iam:PassRole on Resource star, which lets the holder hand any role
-in the account to any service and is a standard privilege-escalation path. TG-P11 flags exactly
-that pattern as high severity, so shipping it in this project's own policy would be hard to
-defend. It is now limited to roles matching terraguard-* with an iam:PassedToService condition.
-The remaining star resources are actions AWS gives no resource-level control over."""
+The first terraform apply failed on four AccessDenied errors at once: budgets:TagResource,
+iam:TagOpenIDConnectProvider and s3:GetBucketAcl. Every one was a tagging or read action rather
+than a create, because the policy had been assembled from what the project does and that misses
+what the provider does around each call. The whole class is added rather than the four that
+surfaced first, since patching one per failed apply shapes the policy by evaluation order."""
 
 
 def say(text: str = "") -> None:
