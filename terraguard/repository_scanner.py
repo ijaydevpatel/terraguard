@@ -18,6 +18,7 @@ from .models import EvidenceSource, Finding, NormalisedEvent
 
 __all__ = [
     "scan_repository",
+    "load_ignores",
     "walk_paths",
     "scan_paths",
     "scan_temp_artefacts",
@@ -172,12 +173,41 @@ def scan_paths(
     return findings
 
 
+IGNORE_FILE = ".terraguardignore"
+
+
+def load_ignores(repo: Path) -> list[str]:
+    """Path globs whose example secrets are known and accepted.
+
+    Documentation that explains the rule, and tests that exercise it, legitimately contain
+    strings under sensitive key names. They are true positives by the rule's own definition,
+    so the answer is an explicit, reviewable allowlist rather than a weaker rule. Every entry
+    has to be written down and can be read back in a review.
+
+    This never suppresses a committed state or plan file. Those are the findings the tool
+    exists for, and an allowlist that could hide them would be a liability.
+    """
+    target = repo / IGNORE_FILE
+    if not target.exists():
+        return []
+    return [
+        line.strip()
+        for line in target.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+
+
 def scan_file_contents(repo: Path, paths: list[str]) -> list[Finding]:
     """Look inside tracked text files for credential-shaped strings."""
+    import fnmatch
+
     findings: list[Finding] = []
+    ignores = load_ignores(repo)
     for path in paths:
         posix = path.replace("\\", "/")
         if _is_fixture(posix):
+            continue
+        if any(fnmatch.fnmatch(posix, pattern) for pattern in ignores):
             continue
         target = repo / path
         try:

@@ -23,17 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Generate the scenario corpus and finish the command line
+COMMIT_MESSAGE = """Add a reviewed allowlist for the project's own example secrets
 
-The corpus builds 43 distinct scenario families rather than replaying a handful, because
-grouped cross-validation is bounded by independent families and not by row count. The dataset
-is now 684 observations and 678 findings across 56 templates, with detection and policy status
-matching ground truth on every run and no false alerts on 120 negative controls. Building it
-exposed four silent detection failures: drift findings carried no control id so drift controls
-could never fire, nothing covered out-of-band deletion, encryption removal read as an ordinary
-value change, and a disabled public access block read as housekeeping. All four are fixed,
-TG-P13 now covers deletion, and the command line gained scan, analyse, train, evaluate and
-report with a severity gate."""
+Running the tool against this repository reported six values under sensitive key names, all of
+them in documentation that explains the rule or tests that exercise it. They are true positives
+by the rule's own definition, so the rule stays strict and a .terraguardignore allowlist carries
+the accepted paths with a written reason for each. The allowlist cannot suppress a committed
+state or plan file, which is the finding the tool exists for, and a test holds that line."""
 
 
 def say(text: str = "") -> None:

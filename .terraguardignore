@@ -1,0 +1,19 @@
+# Paths whose example secrets are known, accepted and reviewed.
+#
+# Each entry is a true positive by the rule's definition: a value under a sensitive key name
+# in a tracked file. They are documentation that explains the rule and tests that exercise
+# it, so the value is the point. Suppressing them here keeps the rule strict and the decision
+# visible, which is the opposite of loosening the pattern until the noise goes away.
+#
+# This file cannot hide a committed state or plan file. Those findings ignore it entirely.
+
+# Explains the key-name rule using "password": "hunter2" as the worked example.
+docs/FEATURES.md
+terraguard/repository_scanner.py
+
+# Builds the synthetic corpus, so it holds the generator's placeholder key material.
+scenarios/generate_corpus.py
+
+# Exercise the redactor and the scanners against example credentials.
+tests/test_redactor.py
+tests/test_scanners.py

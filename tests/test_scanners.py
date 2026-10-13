@@ -181,3 +181,21 @@ def test_ordinary_files_are_not_mistaken_for_temp_artefacts():
     from terraguard.repository_scanner import scan_temp_artefacts
 
     assert scan_temp_artefacts(["main.tf", "README.md", "plan_parser.py"]) == []
+
+
+def test_allowlist_suppresses_a_documented_example(tmp_path):
+    """An accepted example in documentation should not be reported every run."""
+    from terraguard.repository_scanner import scan_file_contents
+
+    (tmp_path / "doc.md").write_text('password = "hunter2"\n', encoding="utf-8")
+    assert scan_file_contents(tmp_path, ["doc.md"])
+    (tmp_path / ".terraguardignore").write_text("doc.md\n", encoding="utf-8")
+    assert not scan_file_contents(tmp_path, ["doc.md"])
+
+
+def test_allowlist_cannot_hide_a_committed_state_file(tmp_path):
+    """The findings the tool exists for must never be suppressible."""
+    from terraguard.repository_scanner import scan_paths
+
+    (tmp_path / ".terraguardignore").write_text("terraform.tfstate\n", encoding="utf-8")
+    assert scan_paths(["terraform.tfstate"])
