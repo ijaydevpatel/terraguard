@@ -23,13 +23,14 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Declare the dependencies the package actually imports
+COMMIT_MESSAGE = """Record the first drift detection against a real account
 
-pyproject.toml had no dependencies field, so pip install -e . installed terraguard and nothing
-it imports, and a clean environment failed on the first import of pydantic. The versions were
-in requirements.txt all along, which is why this never surfaced in development. rich and boto3
-become extras, since the scanner degrades to plain text without one and never calls AWS at all
-without the other."""
+Port 22 opened to the world through the AWS API, never through Terraform, then caught from a
+refresh-only plan: TG-P10, high or critical by rule 2, exit code 1. Six further findings came
+with it, all index-shift artefacts from the parent security group's computed ingress list,
+which no synthetic fixture reproduced because the fixtures were written as the diff the parser
+should see rather than captured from a real refresh. The ladder classified all six as
+non-security and the gate still fired on the right one."""
 
 
 def say(text: str = "") -> None:

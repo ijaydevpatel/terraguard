@@ -343,3 +343,23 @@ The honest version: a fresh clone passes its tests when the dependencies happen 
 and the packaging defect was found by a person running the documented install command on a
 machine that had never seen the project. That is the check T092 should have been.
 Evidence: `pyproject.toml`, install failure of 14 October 2026.
+
+## 2026-10-14 - discrete rule resources do not remove the noise
+
+**The first live drift run produced one true finding and six artefacts.**
+The configuration manages ingress with discrete `aws_vpc_security_group_ingress_rule`
+resources, chosen earlier precisely so that one changed rule yields one unambiguous attribute
+path. That decision holds for the configuration. It does not hold for the refresh, because the
+parent `aws_security_group` still exposes `ingress` as a computed list, and adding a rule
+through the API reorders it. Six index-shift changes followed.
+
+No synthetic fixture reproduced this, because the fixtures were written as the diff the parser
+should see rather than captured from a refresh of a real group. That is the gap between
+plausible test data and real data, and it took one live run to find it.
+
+The severity ladder classified all six as non-security and the gate fired on the right finding,
+so the outcome was correct and the report was cluttered. Not fixing it by suppressing the
+parent resource's computed list: that would risk hiding a real change to a group that is not
+managed by discrete rules, which is the common case in other people's infrastructure. Recorded
+as a limitation and as a measurement the project has not made.
+Evidence: `notes/results_D04_live_drift.md`.
