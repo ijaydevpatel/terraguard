@@ -2,7 +2,7 @@
 # TG-P02: remote, encrypted, locked. Never a local backend.
 terraform {
   backend "s3" {
-    bucket = "REPLACE_WITH_BOOTSTRAP_OUTPUT"
+    bucket = "terraguard-state-jp-7f3a21"
     key    = "baseline/terraform.tfstate"
     region = "us-east-1"
 

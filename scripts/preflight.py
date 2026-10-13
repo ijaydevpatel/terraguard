@@ -23,13 +23,14 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Add the actions a real apply needed, not the ones the docs implied
+COMMIT_MESSAGE = """Point the baseline at the live state backend
 
-The first terraform apply failed on four AccessDenied errors at once: budgets:TagResource,
-iam:TagOpenIDConnectProvider and s3:GetBucketAcl. Every one was a tagging or read action rather
-than a create, because the policy had been assembled from what the project does and that misses
-what the provider does around each call. The whole class is added rather than the four that
-surfaced first, since patching one per failed apply shapes the policy by evaluation order."""
+The bootstrap stack applied: encrypted versioned bucket with public access blocked and a
+TLS-only policy, two budget alarms, the GitHub OIDC provider and the CI role. backend.tf now
+names the real bucket and the baseline scans clean against the project's own TG-P02, TG-P03 and
+TG-P04 controls, which is the first time those have been checked against something deployed
+rather than a fixture. Reproducibility record updated with the region, Terraform build and
+backend settings."""
 
 
 def say(text: str = "") -> None:
