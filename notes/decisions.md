@@ -273,3 +273,24 @@ Consequence for the write-up: latency is no longer a stated consideration, and t
 section should say the experiment ran in a single region without claiming that region was
 selected on technical grounds.
 Evidence: `terraform/bootstrap/variables.tf`, `terraform/baseline/variables.tf`, `docs/RUNBOOK.md`.
+
+## 2026-10-14 - iam:PassRole scoped after the console flagged it
+
+**`iam:PassRole` moved out of the broad IAM statement and scoped to this project's own roles.**
+Alternative: leave it on `Resource: "*"` and dismiss the console warning, which is what the
+error count tempted me to do once the invalid action was gone. Rejected because a wildcard
+`PassRole` lets the holder hand any role in the account to any service, which is a standard
+privilege-escalation path, and because TG-P11 flags wildcard IAM as a high severity finding.
+A tool that reports that pattern in other people's infrastructure should not ship a policy
+containing it.
+
+Now limited to `arn:aws:iam::*:role/terraguard-*` with an `iam:PassedToService` condition for
+the three services this project passes roles to. Both roles the stacks create, the baseline
+role and the CI role, match that prefix.
+
+The remaining `Resource: "*"` entries are actions AWS does not support resource-level
+permissions for, such as `ec2:DescribeSecurityGroups` and `sts:GetCallerIdentity`. The explicit
+Deny on EC2 instances, RDS, EKS, ElastiCache, SageMaker and Redshift is what bounds the cost
+exposure those leave open, and the limitations section should say so rather than claiming the
+policy is tight everywhere.
+Evidence: `docs/iam/local_dev_policy.json`.

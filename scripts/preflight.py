@@ -23,13 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Move the environment to us-east-1 and fix an invalid IAM action
+COMMIT_MESSAGE = """Scope iam:PassRole instead of dismissing the console warning
 
-The deployment region follows the account owner rather than the earlier service-maturity
-argument, which never weighed who runs the commands. Seven live stacks, the pipeline and the
-docs change; the synthetic fixtures keep the old region on purpose so the dataset and committed
-results do not churn. The local developer policy also named budgets:DescribeBudget, which AWS
-rejects because no such action exists, and budgets:CreateBudgetAction, which nothing here uses."""
+The policy validator flagged iam:PassRole on Resource star, which lets the holder hand any role
+in the account to any service and is a standard privilege-escalation path. TG-P11 flags exactly
+that pattern as high severity, so shipping it in this project's own policy would be hard to
+defend. It is now limited to roles matching terraguard-* with an iam:PassedToService condition.
+The remaining star resources are actions AWS gives no resource-level control over."""
 
 
 def say(text: str = "") -> None:
