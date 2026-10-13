@@ -75,8 +75,13 @@ def test_gate_passes_a_clean_directory(tmp_path):
 
 
 def test_gate_threshold_is_respected(tmp_path):
-    """A high finding is below a critical gate, so the build should still pass."""
-    assert main(["scan", str(_dirty(tmp_path)), "--fail-on", "critical"]) == 0
+    """Separate directories: _clean must not inherit the state file _dirty wrote."""
+    dirty = tmp_path / "dirty"
+    clean = tmp_path / "clean"
+    dirty.mkdir()
+    clean.mkdir()
+    assert main(["scan", str(_dirty(dirty)), "--fail-on", "medium"]) == 1
+    assert main(["scan", str(_clean(clean)), "--fail-on", "low"]) == 0
 
 
 def test_indeterminate_controls_warn_rather_than_pass_silently(tmp_path, capsys):
@@ -130,3 +135,17 @@ def test_leak_prevention_demonstration_passes():
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert "8/8 checks passed" in proc.stdout
+
+
+def test_fail_on_critical_can_actually_fail(tmp_path):
+    """Regression: no band mapped to critical, so the strictest gate passed everything.
+
+    The rubric merges high and critical, so this is an alias rather than a finer filter. An
+    alias that fires is correct; a flag that silently never fires is not.
+    """
+    dirty = tmp_path / "dirty"
+    clean = tmp_path / "clean"
+    dirty.mkdir()
+    clean.mkdir()
+    assert main(["scan", str(_dirty(dirty)), "--fail-on", "critical"]) == 1
+    assert main(["scan", str(_clean(clean)), "--fail-on", "critical"]) == 0

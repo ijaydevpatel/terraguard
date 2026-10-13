@@ -38,10 +38,15 @@ EXIT_FINDINGS = 1
 EXIT_USAGE = 2
 
 GATE_ORDER = {"low": 0, "medium": 1, "high": 2, "critical": 3}
+# The rubric has three classes, and high and critical are deliberately merged because the
+# dataset cannot support separating them. The gate still accepts `critical` so that a pipeline
+# written against four levels works, but it is an alias for the merged band rather than a
+# finer filter. Mapping it to "high" instead meant `--fail-on critical` could never fire at
+# all, which is worse than a coarse gate: it silently passes everything.
 BAND_TO_GATE = {
     "non_security_or_low": "low",
     "medium": "medium",
-    "high_or_critical": "high",
+    "high_or_critical": "critical",
 }
 
 
@@ -117,6 +122,11 @@ def _gate(report, results, threshold: str | None) -> int:
     if not threshold:
         return EXIT_OK
 
+    if threshold == "critical":
+        _echo(
+            "note: the severity rubric merges high and critical, so --fail-on critical "
+            "behaves identically to --fail-on high"
+        )
     floor = GATE_ORDER[threshold]
     breached = [r for r in report if GATE_ORDER[BAND_TO_GATE[r.severity_band]] >= floor]
     warned = [

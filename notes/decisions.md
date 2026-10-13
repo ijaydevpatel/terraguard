@@ -363,3 +363,47 @@ parent resource's computed list: that would risk hiding a real change to a group
 managed by discrete rules, which is the common case in other people's infrastructure. Recorded
 as a limitation and as a measurement the project has not made.
 Evidence: `notes/results_D04_live_drift.md`.
+
+## 2026-10-14 - external QA review, and what it found
+
+An independent review went through the code, Terraform, workflows, tests, datasets and the
+tracker. It was right about every claim I checked, and several of them undercut things this
+project had already asserted.
+
+**Redaction let an ordinary password through.** `variables` is shaped
+`{"db_password": {"value": "hunter2"}}`, so a rule that reads the immediate key sees `value`,
+decides it is dull, and writes the password out. `_redact` took a `key` argument and never used
+it. `output_changes` was not in the list of sections redacted at all. The final gate accepted
+both, because it matched secret *shapes* and a password has none - which is the exact reason
+the key-name rule exists.
+
+Fixed by carrying sensitive-key context down the walk, honouring the `<name>_sensitive` sibling
+convention everywhere rather than only inside `resource_changes`, and adding a structural gate
+that fails on any readable scalar beneath a sensitive key. The shape gate cannot catch this
+class and no amount of pattern tuning will change that.
+
+This also means the leak demonstration proved less than claimed. It plants an AWS key and a
+state file and shows both are caught and blocked, which is true. It never exercised plan
+redaction of variables or outputs, so it could not have caught this.
+
+**Three of sixteen model features were constant across all 678 findings.** `is_remote_drift`
+read a column no writer produced, `run_policy_status` read `policy_status` when the column is
+`actual_policy_status`, and `sensitive_data_involved` looked for a marker that never appears in
+a detail string. Every previously reported model figure was computed on thirteen features. With
+the joins fixed, Logistic Regression moved 0.6699 to 0.7435 and Random Forest 0.5482 to 0.8282,
+reversing the reported ordering. The earlier claim that Logistic Regression led was an artefact.
+
+**`--fail-on critical` could never fail.** No band mapped to critical, so the strictest setting
+silently passed everything. The rubric merges high and critical, so it is now an alias that
+fires, and says so, rather than a filter that quietly does nothing.
+
+**The two collection paths disagreed.** The harness assessed eight core controls and the corpus
+generator thirteen, so `assessment_coverage` meant different things in rows from each.
+
+**No fitted estimator was ever saved.** `models/` was empty and only the encoder was persisted,
+so the documented train-then-predict path did not exist end to end.
+
+What this says about the project's own testing: every one of these passed a full test suite.
+The tests covered the paths I thought to write, and each defect lived in a path I had not. The
+external review found them in an afternoon, which is the argument for having one.
+Evidence: `tests/test_redactor.py`, `tests/test_cli.py`, `results/`.

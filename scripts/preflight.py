@@ -23,14 +23,14 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Record the first drift detection against a real account
+COMMIT_MESSAGE = """Fix the defects an external review found
 
-Port 22 opened to the world through the AWS API, never through Terraform, then caught from a
-refresh-only plan: TG-P10, high or critical by rule 2, exit code 1. Six further findings came
-with it, all index-shift artefacts from the parent security group's computed ingress list,
-which no synthetic fixture reproduced because the fixtures were written as the diff the parser
-should see rather than captured from a real refresh. The ladder classified all six as
-non-security and the gate still fired on the right one."""
+Redaction let an ordinary password through: sensitive-key context was dropped the moment the
+value was nested, output_changes was never redacted, and the final gate only matched secret
+shapes, which a password does not have. Three of sixteen model features were constant because
+the loader read columns no writer produced, so every reported figure used thirteen features and
+the model ordering reverses once fixed. The strictest gate could never fail, the two collection
+paths assessed different control sets, and no fitted estimator was ever saved."""
 
 
 def say(text: str = "") -> None:

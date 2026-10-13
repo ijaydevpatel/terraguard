@@ -134,7 +134,7 @@ def load_rows(findings_csv: str | Path, observations_csv: str | Path) -> list[Fi
                 in_history_only="history" in (r.get("detail") or "").lower(),
                 findings_in_run=per_run[r["run_id"]],
                 assessment_coverage=_float(run.get("assessment_coverage")),
-                run_policy_status=run.get("policy_status") or "",
+                run_policy_status=run.get("actual_policy_status") or "",
                 persistence_across_runs=recurrence[r["finding_id"]],
             )
         )
@@ -165,7 +165,12 @@ def _row_features(row: FindingRow) -> dict[str, object]:
         # a bare resource address is the whole object.
         "attribute_depth": row.resource_address.count(".") + row.resource_address.count("/"),
         "is_remote_drift": int(row.is_remote_drift),
-        "sensitive_data_involved": int("[REDACTED]" in row.detail),
+        # Derived from the normalised event, not from a marker that never appears in a
+        # detail string. The earlier version looked for "[REDACTED]" here and was constant
+        # zero across all 678 findings, so the feature carried no information at all.
+        "sensitive_data_involved": int(
+            row.normalised_event == "sensitive_data_exposure" or "[REDACTED]" in row.detail
+        ),
         "findings_in_run": row.findings_in_run,
         "assessment_coverage": row.assessment_coverage,
         "run_policy_status": row.run_policy_status or "unknown",

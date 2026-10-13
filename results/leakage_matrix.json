@@ -1,15 +1,15 @@
 {
   "grouped_without_rule_inputs": {
-    "macro_f1": 0.6699,
-    "accuracy": 0.7611
+    "macro_f1": 0.7435,
+    "accuracy": 0.8053
   },
   "grouped_with_rule_inputs": {
-    "macro_f1": 0.859,
-    "accuracy": 0.885
+    "macro_f1": 0.8231,
+    "accuracy": 0.8628
   },
   "ungrouped_without_rule_inputs": {
-    "macro_f1": 0.8854,
-    "accuracy": 0.9027
+    "macro_f1": 0.9279,
+    "accuracy": 0.9366
   },
   "ungrouped_with_rule_inputs": {
     "macro_f1": 1.0,

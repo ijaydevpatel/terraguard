@@ -145,7 +145,10 @@ def run(scenario_id: str, *, plan_json: Path | None, run_id: str, dry_run: bool)
         findings, sources = collect_offline(fixture_dir)
         fixture = name
 
-    controls = load_controls(ROOT / "policies")
+    # include_optional matches scenarios/generate_corpus.py. Without it the harness assessed
+    # eight controls and the generator thirteen, so rows from the two paths were not
+    # comparable and assessment_coverage meant different things in each.
+    controls = load_controls(ROOT / "policies", include_optional=True)
     results = assess(controls, findings, available_evidence=sources)
     elapsed_ms = (time.perf_counter() - clock) * 1000
 
@@ -199,6 +202,7 @@ def run(scenario_id: str, *, plan_json: Path | None, run_id: str, dry_run: bool)
                 "run_id",
                 "scenario_id",
                 "finding_id",
+                "is_remote_drift",
                 "evidence_source",
                 "control_id",
                 "normalised_event",
@@ -210,6 +214,9 @@ def run(scenario_id: str, *, plan_json: Path | None, run_id: str, dry_run: bool)
                     "run_id": run_id,
                     "scenario_id": scenario_id,
                     "finding_id": f.finding_id,
+                    # Column order must match scenarios/generate_corpus.py exactly: both append
+                    # to the same CSV, and a mismatch silently shifts every later column.
+                    "is_remote_drift": bool((f.raw or {}).get("is_remote_drift")),
                     "evidence_source": f.evidence_source.value,
                     "control_id": f.control_id or "",
                     "normalised_event": f.normalised_event.value if f.normalised_event else "",

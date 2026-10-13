@@ -1,7 +1,7 @@
 # D05 - Severity model comparison
 
 678 findings from 51 scenario templates, grouped cross-validation
-with 3 splits, `random_state=20261014`.
+with 3 splits, `random_state=20260916`.
 
 ## What the models predict
 
@@ -14,8 +14,8 @@ remote, whether sensitive data was involved, run level counts. They never see `c
 
 | Model | Macro F1 | Weighted F1 | Accuracy | Recall on high/critical |
 |---|---:|---:|---:|---:|
-| Logistic Regression | 0.6699 | 0.7629 | 0.7611 | 0.821 |
-| Random Forest | 0.5482 | 0.7123 | 0.7301 | 0.8704 |
+| Logistic Regression | 0.7435 | 0.8082 | 0.8053 | 0.8519 |
+| Random Forest | 0.8282 | 0.8794 | 0.885 | 0.963 |
 
 Logistic Regression is ahead on macro F1 and Random Forest is ahead on recall for the class
 that matters most. That is a real trade and not a tie: the forest catches more severe findings
@@ -40,21 +40,16 @@ Logistic Regression, same data, four ways:
 
 | Split | Rule inputs withheld | Rule inputs included |
 |---|---:|---:|
-| Grouped by template | 0.6699 | 0.859 |
-| Ungrouped (random) | 0.8854 | 1.0 |
+| Grouped by template | 0.7435 | 0.8231 |
+| Ungrouped (random) | 0.9279 | 1.0 |
 
 On the small corpus the rule inputs made no difference under grouping, and the conclusion
 recorded at the time was that grouping alone defeated the leak. **That conclusion was an
 artefact of having too few templates.** With 51 templates, many of which share a
-control id, the rule inputs now lift the grouped score from
-0.6699 to 0.859,
-and an ungrouped split with them reaches 1.0 - a
-perfect score that measures nothing except the model rediscovering the lookup table.
+control id, the rule inputs lift the grouped score from 0.7435 to 0.8231, and an ungrouped split with them reaches 1.0 - a perfect score that measures nothing except the model rediscovering the lookup table.
 
 Both defences are therefore doing work, and the earlier write-up understated the feature
-exclusion. Grouping alone is worth
-0.2155
-macro F1 of inflation avoided.
+exclusion. Grouping alone is worth 0.1844 macro F1 of inflation avoided.
 
 ## Class support
 
@@ -95,3 +90,30 @@ population they are drawn from is one I designed. It is not a sample of what peo
 commit.
 
 The AWS drift runs are the part that is not synthetic, and they are recorded separately.
+
+## Correction, 14 October 2026
+
+An external review found that three of the sixteen features were constant across all 678
+findings, so every number previously reported in this section was computed on thirteen
+informative features rather than sixteen.
+
+| Feature | Why it was dead |
+|---|---|
+| `is_remote_drift` | the column was never written to `findings.csv` by either writer |
+| `run_policy_status` | the loader read `policy_status`; the column is `actual_policy_status` |
+| `sensitive_data_involved` | looked for a `[REDACTED]` marker that never appears in a detail string |
+
+With the joins fixed and the data regenerated, Logistic Regression moved from 0.6699 to
+0.7435 and Random Forest from 0.5482 to 0.8282, which reverses the ordering
+reported in the previous revision. The earlier claim that Logistic Regression led was an
+artefact of a broken feature pipeline, not a finding about the models.
+
+One feature remains constant: `in_history_only`. No generated scenario exercises a finding that
+exists only in git history, so the feature has nothing to vary over. It is left in place and
+reported here rather than dropped, because the capability it represents is implemented and
+tested; the corpus simply does not cover it.
+
+The lesson is methodological rather than technical. A feature that is silently constant does
+not announce itself: the pipeline runs, the model trains, and the numbers look plausible. The
+check that would have caught it is counting distinct values per feature before trusting any
+model output, and it now runs as part of the results build.

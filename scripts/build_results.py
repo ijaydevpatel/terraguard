@@ -139,6 +139,24 @@ def main() -> int:
     with open(BUILD / "encoder.pkl", "wb") as fh:
         pickle.dump(vectoriser, fh)
 
+    # Fit and persist the estimators themselves. The encoder alone was being saved, so
+    # model_predictor had nothing to load and the documented train-then-predict path did not
+    # exist end to end. These live in models/, which .gitignore excludes: they are large,
+    # regenerable, and pickles are not something to hand round in a repository.
+    from terraguard.model_trainer import labels_for
+
+    models_dir = ROOT / "models"
+    models_dir.mkdir(exist_ok=True)
+    matrix = vectoriser.transform(plain)
+    labels = labels_for(rows)
+    logistic, forest = _fresh_models()
+    logistic.fit(matrix, labels)
+    forest.fit(matrix, labels)
+    for name, estimator in (("logistic_regression", logistic), ("random_forest", forest)):
+        with open(models_dir / f"{name}.pkl", "wb") as fh:
+            pickle.dump(estimator, fh)
+    print(f"  fitted models    {sorted(p.name for p in models_dir.glob('*.pkl'))}")
+
     _write_comparison(report, scores, leakage, RESULTS / "model_comparison.md")
 
     print(f"findings {len(findings)}  observations {len(observations)}")
