@@ -129,50 +129,43 @@ terraform plan -refresh-only
 
 ---
 
-## 5. Prove drift detection end to end
+## 5. Run every drift scenario
 
-Inject one change outside Terraform, capture the plan, and let the tool find it.
+One command. It confirms the baseline is clean, then for each scenario injects the change
+through the AWS API, captures a refresh-only plan, records the observation through the normal
+harness, restores the baseline, confirms it is clean again, and deletes the plan JSON.
 
 ```powershell
 cd $HOME\Desktop\Terragaurd\terraguard-ai
-python scenarios\inject_security_group_drift.py --port 22 --cidr 0.0.0.0/0
-cd terraform\baseline
-terraform plan -refresh-only -out=drift.tfplan
-terraform show -json drift.tfplan > ..\..\evidence\drift.json
-cd ..\..
-python -m terraguard.cli analyse --plan-json evidence\drift.json --include-optional --fail-on high
+python scripts\run_aws_experiment.py --profile default --dry-run
 ```
 
-Expect TG-P10, a high or critical band, and exit code 1. Check the exit code with:
+The dry run locates every target and changes nothing. If it finds them all, run it properly:
 
 ```powershell
-echo $LASTEXITCODE
+python scripts\run_aws_experiment.py --profile default
 ```
 
-Then put it back:
+Seven scenarios: security group opened, bucket encryption removed, public access block
+disabled, IAM widened to a wildcard, CloudTrail stopped, a tag edited, and a managed resource
+deleted. Expect `gate exit 1` on the six security scenarios and `0` on the tag change, which is
+the negative control.
+
+It stops at the first scenario that does not come back clean, and leaves the environment
+restored. A single scenario can be run on its own:
 
 ```powershell
-python scenarios\restore_baseline.py
-cd terraform\baseline; terraform plan -refresh-only; cd ..\..
+python scripts\run_aws_experiment.py --profile default --only SG-001
 ```
 
-The restore script refuses to run against anything that is not the research baseline, so it
-cannot touch another account by accident.
+Everything it does is written to `build\aws_experiment_log.txt`.
 
-The other injections follow the same pattern:
-
-```powershell
-python scenarios\inject_s3_encryption_drift.py
-python scenarios\inject_s3_public_access.py
-python scenarios\inject_iam_privilege_drift.py
-python scenarios\inject_logging_drift.py
-python scenarios\inject_tag_drift.py
-python scenarios\delete_managed_resource.py
-```
-
-Run `restore_baseline.py` after each one.
-
----
+Two safety properties worth knowing. The plan JSON holds every attribute of every refreshed
+resource in cleartext, so it is deleted after each scenario whether that scenario succeeded or
+failed. And `restore_baseline.py` refuses to run unless the caller is an IAM user and the state
+it is about to apply to carries `Project=TerraGuard-AI` and `Environment=test`. It runs
+`terraform apply -auto-approve`, which is the most destructive command in this repository, and
+until today it did that without checking what it was pointed at.
 
 ## 6. Record the runs into the dataset
 

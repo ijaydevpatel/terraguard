@@ -431,3 +431,24 @@ bootstrap stacks, and hiding it there is worse than reporting it here. A control
 allowlist, like `.terraguardignore` for secrets, is the right answer and is recorded as
 outstanding rather than rushed in before a freeze.
 Evidence: `results/checkov_comparison.md`.
+
+## 2026-10-14 - the restore script was applying blind
+
+**`restore_baseline.py` ran `terraform apply -auto-approve` with no idea what it was pointed
+at.** The runbook said it refused to run against anything but the research baseline. It did not
+check. That is the most destructive command in this repository, aimed at whatever credentials
+happened to be configured, and the claim that it was guarded made it less likely anyone would
+look.
+
+It now refuses unless the caller is an IAM user rather than root, the baseline directory is
+initialised, and the state it is about to apply to carries `Project=TerraGuard-AI` and
+`Environment=test`. A stack that does not look like the research environment is not restored.
+
+Found by an external review reading the runbook against the script, which is the cheapest kind
+of defect to find and the easiest to leave in place, because nothing fails until it matters.
+
+**The seven AWS scenarios now run from one orchestrator.** Each one: confirm clean, inject
+through the API, capture a refresh-only plan, record through the normal harness, restore,
+confirm clean, delete the plan JSON. The manual sequence was about forty commands, and the
+failure modes it invited were an injection left in place and a cleartext plan left on disk.
+Evidence: `scripts/run_aws_experiment.py`, `scenarios/restore_baseline.py`.

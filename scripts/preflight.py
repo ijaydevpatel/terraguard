@@ -23,14 +23,14 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Compare against Checkov and record what it exposed
+COMMIT_MESSAGE = """Guard the restore script and run the AWS scenarios from one command
 
-Checkov finds nothing on the backend fixtures, which is not agreement: those files contain a
-backend block and no resources, so its resource-scoped checks have nothing to evaluate, and the
-resource count is now reported alongside every row so the zero cannot be misread. Pointed at the
-real stacks it exposed a false positive of ours instead: TerraGuard flags terraform/bootstrap for
-having no remote backend, which that stack cannot have because it is the stack that creates the
-bucket. Recorded as a limitation rather than special-cased away."""
+restore_baseline.py ran terraform apply -auto-approve without checking what it was pointed at,
+while the runbook claimed it refused to touch anything but the research baseline. It now
+verifies the caller is an IAM user and that the target state carries this project's tags. The
+seven drift scenarios run from a single orchestrator that confirms the baseline is clean, injects
+through the API, records through the normal harness, restores, re-checks, and deletes the
+cleartext plan JSON whether the scenario passed or failed."""
 
 
 def say(text: str = "") -> None:
