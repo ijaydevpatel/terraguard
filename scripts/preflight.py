@@ -23,14 +23,14 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Close the review findings that were mine to close
+COMMIT_MESSAGE = """Compare against Checkov and record what it exposed
 
-Severity is resource aware now, so a port or protocol change on an exposed rule and an ACL
-leaving private are exposures rather than housekeeping. The policy engine evaluates
-applicability, so not_applicable is returned instead of a control about IAM reading compliant
-against a plan containing none. Workflow checks cover per-job scopes, uploads spanning the
-working directory and an unredirected terraform show -json. Backend discovery walks the tree
-and strips comments, and a robustness suite of 44 malformed plans found two parser crashes."""
+Checkov finds nothing on the backend fixtures, which is not agreement: those files contain a
+backend block and no resources, so its resource-scoped checks have nothing to evaluate, and the
+resource count is now reported alongside every row so the zero cannot be misread. Pointed at the
+real stacks it exposed a false positive of ours instead: TerraGuard flags terraform/bootstrap for
+having no remote backend, which that stack cannot have because it is the stack that creates the
+bucket. Recorded as a limitation rather than special-cased away."""
 
 
 def say(text: str = "") -> None:

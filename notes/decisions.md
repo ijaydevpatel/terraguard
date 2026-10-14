@@ -407,3 +407,27 @@ What this says about the project's own testing: every one of these passed a full
 The tests covered the paths I thought to write, and each defect lived in a path I had not. The
 external review found them in an afternoon, which is the argument for having one.
 Evidence: `tests/test_redactor.py`, `tests/test_cli.py`, `results/`.
+
+## 2026-10-14 - the Checkov comparison found a false positive in our own bootstrap
+
+**Checkov reports nothing on the backend fixtures, and that is not agreement.**
+Each fixture contains a `terraform { backend }` block and no resources, so Checkov's
+resource-scoped checks have nothing to evaluate and `resource_count` is zero. Presenting that
+as a clean bill of health would be technically accurate and completely misleading, so the
+resource count is reported alongside every row.
+
+**The comparison's real finding is about this project, not Checkov.** Run against
+`terraform/bootstrap`, TerraGuard reports TG-P02, TG-P03 and TG-P04. The bootstrap stack has no
+remote backend by design: it is the stack that creates the state bucket, so it cannot store its
+state in a bucket that does not exist. That is standard Terraform practice and the tool calls it
+insecure state handling.
+
+None of the internal fixtures surfaced this, because none of them modelled a stack that
+legitimately has local state. An external tool pointed at the real repository did, which is the
+argument for the comparison existing.
+
+Not patched by special-casing a directory name: the same pattern is common in other people's
+bootstrap stacks, and hiding it there is worse than reporting it here. A control-level
+allowlist, like `.terraguardignore` for secrets, is the right answer and is recorded as
+outstanding rather than rushed in before a freeze.
+Evidence: `results/checkov_comparison.md`.
