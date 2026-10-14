@@ -62,6 +62,25 @@ def run(args: list[str], *, cwd: Path = ROOT, timeout: int = 900) -> subprocess.
     return subprocess.run(args, cwd=str(cwd), capture_output=True, text=True, timeout=timeout)
 
 
+def failure_detail(proc: subprocess.CompletedProcess, lines: int = 12) -> str:
+    """Report what actually went wrong, which the first version of this file did not.
+
+    It printed `(stdout or stderr)[:220]`. Two faults in one expression: `or` discards stderr
+    entirely whenever stdout is non-empty, and a 220-character head of a Python traceback shows
+    the frames and cuts off the exception, which is the only line that identifies the error. Five
+    scenarios failed and the log said `File "...", line 41, in <module>` five times.
+
+    So: both streams, and the tail rather than the head.
+    """
+    parts = []
+    for label, stream in (("stdout", proc.stdout), ("stderr", proc.stderr)):
+        text = (stream or "").strip()
+        if text:
+            tail = text.splitlines()[-lines:]
+            parts.append(f"{label}:\n      " + "\n      ".join(tail))
+    return "\n    ".join(parts) or "(no output on either stream)"
+
+
 def terraform_is_clean() -> tuple[bool, str]:
     proc = run(["terraform", "plan", "-refresh-only", "-no-color", "-input=false"], cwd=BASELINE)
     out = proc.stdout + proc.stderr
@@ -70,20 +89,22 @@ def terraform_is_clean() -> tuple[bool, str]:
     return ("No changes" in out or "no differences" in out), out.strip()[-300:]
 
 
-def capture_plan(destination: Path) -> bool:
+def capture_plan(destination: Path) -> str:
+    """Write the refresh-only plan as JSON. Returns "" on success, else why it failed."""
     plan = BASELINE / "drift.tfplan"
-    if run(
+    planned = run(
         ["terraform", "plan", "-refresh-only", "-no-color", "-input=false", "-out=drift.tfplan"],
         cwd=BASELINE,
-    ).returncode:
-        return False
+    )
+    if planned.returncode:
+        return failure_detail(planned)
     shown = run(["terraform", "show", "-json", "drift.tfplan"], cwd=BASELINE)
     plan.unlink(missing_ok=True)
     if shown.returncode:
-        return False
+        return failure_detail(shown)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(shown.stdout, encoding="utf-8")
-    return True
+    return ""
 
 
 def restore(profile: str, run_id: str) -> bool:
@@ -158,11 +179,13 @@ def main() -> int:
         if args.dry_run:
             inject.append("--dry-run")
         proc = run(inject)
-        say(f"  inject exit {proc.returncode}: {(proc.stdout or proc.stderr).strip()[:220]}")
         if proc.returncode:
+            say(f"  inject exit {proc.returncode}")
+            say("    " + failure_detail(proc))
             say("  injection failed; nothing to restore, moving on")
             results.append({"scenario": scenario_id, "status": "inject_failed"})
             continue
+        say(f"  inject exit 0: {proc.stdout.strip()[:220]}")
         if args.dry_run:
             results.append({"scenario": scenario_id, "status": "dry_run"})
             continue
@@ -170,11 +193,20 @@ def main() -> int:
         time.sleep(3)  # let the API change settle before refreshing
         evidence = EVIDENCE / f"{run_id}.json"
         try:
-            if not capture_plan(evidence):
-                say("  could not capture the refresh-only plan")
+            problem = capture_plan(evidence)
+            if problem:
+                say("  could not capture the refresh-only plan\n    " + problem)
                 results.append({"scenario": scenario_id, "status": "plan_failed"})
                 continue
             say(f"  captured {evidence.name} ({evidence.stat().st_size} bytes)")
+
+            # An injection that Terraform cannot see is a finding, not a success. Per-rule
+            # resources like aws_vpc_security_group_ingress_rule have no state entry for a rule
+            # added out of band, so refresh has nothing to reconcile and reports no changes.
+            drifted = json.loads(evidence.read_text(encoding="utf-8")).get("resource_drift") or []
+            if not drifted:
+                say("  WARNING: the change was injected but refresh-only reports no drift.")
+                say("  This is a detection blind spot, not a passing scenario. See R25.")
 
             recorded = run(
                 [
@@ -205,8 +237,9 @@ def main() -> int:
             results.append(
                 {
                     "scenario": scenario_id,
-                    "status": "ok",
+                    "status": "ok" if drifted else "no_drift_detected",
                     "gate_exit": assessed.returncode,
+                    "drifted_resources": len(drifted),
                     "recorded": recorded.returncode == 0,
                 }
             )

@@ -129,6 +129,26 @@ terraform plan -refresh-only
 
 ---
 
+## 4b. Clear any leftover drift
+
+Do this before the first experiment run, and any time a run halts part way.
+
+```powershell
+cd $HOME\Desktop\Terragaurd\terraguard-ai
+python scripts\reset_aws_baseline.py --profile default
+python scripts\reset_aws_baseline.py --profile default --apply
+cd terraform\baseline;  terraform apply;  cd ..\..
+```
+
+The first command only reports. The second reverts what it found. The `terraform apply` settles
+anything Terraform manages itself.
+
+This step exists because `terraform plan -refresh-only` can report a clean baseline while the
+security group is open to the world. Both statements can be true at once, for the reason in
+section 5.
+
+---
+
 ## 5. Run every drift scenario
 
 One command. It confirms the baseline is clean, then for each scenario injects the change
@@ -160,7 +180,35 @@ python scripts\run_aws_experiment.py --profile default --only SG-001
 
 Everything it does is written to `build\aws_experiment_log.txt`.
 
-Two safety properties worth knowing. The plan JSON holds every attribute of every refreshed
+### What refresh-only cannot see
+
+The baseline manages ingress as individual `aws_vpc_security_group_ingress_rule` resources, one
+Terraform resource per rule. A rule *added* through the AWS API has no state entry, so a refresh
+has nothing to reconcile it against and reports no changes. The group is wide open and the plan
+is clean.
+
+That is not a defect in this tool. Any scanner that reads refresh output inherits it, because
+Terraform is doing what it says: reconciling the resources it manages. It is recorded as R25 and
+reported in the limitations rather than worked around quietly.
+
+The consequence for the experiment is that SG-001 now *modifies the managed rule* - rewriting
+the baseline SSH source from `10.0.0.0/8` to `0.0.0.0/0` - rather than adding a new one. Same
+posture regression, same severity, and in state, so refresh sees it and `terraform apply`
+restores it.
+
+The old behaviour is kept deliberately, to demonstrate the gap instead of tripping over it:
+
+```powershell
+python scenarios\inject_security_group_drift.py --run-id blindspot-1 --profile default --unmanaged
+cd terraform\baseline;  terraform plan -refresh-only;  cd ..\..
+```
+
+That plan will report no changes. Clean up with `scripts\reset_aws_baseline.py --apply`, because
+`terraform apply` will not: it does not know the rule exists.
+
+### Two safety properties
+
+The plan JSON holds every attribute of every refreshed
 resource in cleartext, so it is deleted after each scenario whether that scenario succeeded or
 failed. And `restore_baseline.py` refuses to run unless the caller is an IAM user and the state
 it is about to apply to carries `Project=TerraGuard-AI` and `Environment=test`. It runs

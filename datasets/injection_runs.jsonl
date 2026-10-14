@@ -1,3 +1,5 @@
 {"scenario_id": "SG-001", "run_id": "SG-001-live", "action": "dry-run", "timestamp": "2026-10-13T22:37:29.291837+00:00", "region": "us-east-1", "dry_run": true, "detail": {"group_id": "sg-0154f42cdfb4f0cff", "port": 22, "cidr": "0.0.0.0/0"}}
 {"scenario_id": "SG-001", "run_id": "SG-001-live", "action": "injected", "timestamp": "2026-10-13T22:38:05.048047+00:00", "region": "us-east-1", "dry_run": false, "detail": {"group_id": "sg-0154f42cdfb4f0cff", "port": 22, "cidr": "0.0.0.0/0"}}
 {"scenario_id": "RESTORE", "run_id": "SG-001-live", "action": "restore-incomplete", "timestamp": "2026-10-13T22:46:29.862831+00:00", "region": "us-east-1", "dry_run": false, "detail": {"detailed_exitcode": 2}}
+{"scenario_id": "IAM-001", "run_id": "IAM-001-20261014T024310Z", "action": "dry-run", "timestamp": "2026-10-14T02:43:41.816075+00:00", "region": "us-east-1", "dry_run": true, "detail": {"policy_arn": "arn:aws:iam::942893239477:policy/terraguard-baseline-policy"}}
+{"scenario_id": "LOG-001", "run_id": "LOG-001-20261014T024310Z", "action": "dry-run", "timestamp": "2026-10-14T02:43:43.619385+00:00", "region": "us-east-1", "dry_run": true, "detail": {"trail": "terraguard-trail"}}

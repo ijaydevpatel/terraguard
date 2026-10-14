@@ -11,17 +11,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _common import parse_args, record, require, session  # noqa: E402
+from _common import baseline_output, parse_args, record, require, session  # noqa: E402
 
 
 def main() -> int:
     args = parse_args("S3-002", __doc__)
     s3 = session(args).client("s3")
-    names = [
-        b["Name"] for b in s3.list_buckets()["Buckets"] if b["Name"].startswith("terraguard-test-")
-    ]
-    require(len(names) == 1, f"expected one terraguard-test-* bucket, found {len(names)}")
-    bucket = names[0]
+    bucket = baseline_output("test_bucket")
 
     current = s3.get_public_access_block(Bucket=bucket)["PublicAccessBlockConfiguration"]
     require(all(current.values()), "public access block is already partly disabled")

@@ -40,8 +40,11 @@ from terraguard.drift_extractor import extract_from_plan  # noqa: E402
 from terraguard.drift_normaliser import normalise  # noqa: E402
 from terraguard.models import UTC, EvidenceSource, PolicyStatus  # noqa: E402
 from terraguard.policy_engine import assess, assessment_coverage, load_controls  # noqa: E402
-from terraguard.repository_scanner import scan_file_contents, scan_paths  # noqa: E402
-from terraguard.repository_scanner import scan_temp_artefacts  # noqa: E402
+from terraguard.repository_scanner import (  # noqa: E402
+    scan_file_contents,
+    scan_paths,
+    scan_temp_artefacts,
+)
 from terraguard.severity_rules import classify_all  # noqa: E402
 from terraguard.workflow_scanner import scan_workflows  # noqa: E402
 

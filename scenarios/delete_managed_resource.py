@@ -11,17 +11,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _common import parse_args, record, require, session  # noqa: E402
+from _common import baseline_output, parse_args, record, require, session  # noqa: E402
 
 
 def main() -> int:
     args = parse_args("DEL-001", __doc__)
     s3 = session(args).client("s3")
-    names = [
-        b["Name"] for b in s3.list_buckets()["Buckets"] if b["Name"].startswith("terraguard-logs-")
-    ]
-    require(len(names) == 1, f"expected one terraguard-logs-* bucket, found {len(names)}")
-    bucket = names[0]
+    bucket = baseline_output("log_bucket")
     require("state" not in bucket, "refusing to touch anything that looks like the state bucket")
 
     contents = s3.list_objects_v2(Bucket=bucket).get("KeyCount", 0)

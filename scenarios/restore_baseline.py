@@ -95,7 +95,16 @@ def main() -> int:
     if code == 0:
         record(args, "restored", {"drift": "none"})
         return 0
+    # This happened on 13 Oct and was written to a log nobody read, leaving an open 0.0.0.0/0
+    # rule in place for a day. `terraform apply` cannot revert a change to something it does
+    # not manage, so the message has to name the tool that can.
     record(args, "restore-incomplete", {"detailed_exitcode": code})
+    sys.stderr.write(
+        "RESTORE INCOMPLETE: drift remains after apply.\n"
+        "terraform apply cannot revert a resource it does not manage (R25). Run:\n"
+        "  python scripts/reset_aws_baseline.py --profile <profile> --apply\n"
+        "and then terraform apply in terraform/baseline. Do not run further scenarios first.\n"
+    )
     return 1
 
 

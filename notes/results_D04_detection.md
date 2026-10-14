@@ -93,6 +93,34 @@ All five are fixed and covered by tests. They are reported here rather than quie
 because a detection tool that has never been shown to fail has usually not been tested hard
 enough.
 
+## A detection gap that is not fixable in this tool
+
+The first live dry run surfaced something the synthetic corpus could not. The pre-flight
+reported the baseline clean while the security group was already open to the world, and both
+reports were correct.
+
+The baseline manages ingress as individual `aws_vpc_security_group_ingress_rule` resources, one
+Terraform resource per rule. A rule added out of band has no corresponding state entry, so
+`terraform plan -refresh-only` has nothing to compare it against and emits an empty
+`resource_drift`. Terraform is behaving as documented: it reconciles the resources it manages,
+and an unmanaged rule is not one of them.
+
+This bounds the whole approach rather than this implementation. Every control in this project
+that depends on refresh output - TG-P10 through TG-P13 - can only see drift in resources
+Terraform already tracks. Modified attributes are visible. Added resources are not. A tool built
+on `terraform plan` cannot close that gap; closing it needs a second evidence source that
+enumerates actual cloud state, such as AWS Config or a direct API sweep, which is named as
+further work rather than claimed here.
+
+Two consequences were acted on. SG-001 was rewritten to modify the managed rule's CIDR rather
+than add a new rule, so the scenario produces detectable drift of the same severity. And the
+orchestrator now treats an injected change that yields empty `resource_drift` as a failed
+scenario rather than a passing one, because a scenario that detects nothing and reports success
+is the worst possible outcome.
+
+The original injection is retained behind a flag so the negative result can be reported from
+evidence rather than from argument.
+
 ## What these results do not support
 
 The corpus is synthetic. Every configuration was written by a generator I designed, so the

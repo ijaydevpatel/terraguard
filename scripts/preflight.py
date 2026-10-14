@@ -23,14 +23,13 @@ BOOK = ROOT.parent / "TerraGuard_Build_Tracker.xlsx"
 LOG = ROOT / "build/preflight_log.txt"
 _lines: list[str] = []
 
-COMMIT_MESSAGE = """Guard the restore script and run the AWS scenarios from one command
+COMMIT_MESSAGE = """Fix what the first live dry run exposed and withdraw a result it disproved
 
-restore_baseline.py ran terraform apply -auto-approve without checking what it was pointed at,
-while the runbook claimed it refused to touch anything but the research baseline. It now
-verifies the caller is an IAM user and that the target state carries this project's tags. The
-seven drift scenarios run from a single orchestrator that confirms the baseline is clean, injects
-through the API, records through the normal harness, restores, re-checks, and deletes the
-cleartext plan JSON whether the scenario passed or failed."""
+Four scenarios located their bucket with s3.list_buckets, which needs s3:ListAllMyBuckets while
+the policy grants the similarly named s3:ListBucket; they now read the name from terraform
+output and need no account-wide read. A fifth showed that refresh-only cannot see a rule added
+out of band, so SG-001 modifies the managed rule instead. No live observation exists in
+observations.csv, so M3 and T035 are reverted and the detection claims are synthetic for now."""
 
 
 def say(text: str = "") -> None:

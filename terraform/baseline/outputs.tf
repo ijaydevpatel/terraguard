@@ -11,6 +11,11 @@ output "test_bucket" {
   value       = aws_s3_bucket.test.id
 }
 
+output "log_bucket" {
+  description = "Access-log bucket name (drift target for DEL-001)."
+  value       = aws_s3_bucket.access_logs.id
+}
+
 output "iam_role_name" {
   description = "Baseline IAM role name (drift target for IAM scenarios)."
   value       = aws_iam_role.baseline.name
