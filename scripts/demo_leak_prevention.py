@@ -6,7 +6,8 @@ This demonstration does, on a throwaway repository, in four steps:
 
     1. DETECT   plant an AWS key and a state file, scan, expect findings and exit 1
     2. REDACT   check the report never contains the key or the password it found
-    3. PREVENT  install the guard as a pre-commit hook and confirm the commit does not land
+    3. PREVENT  install the guard as a pre-commit hook; neither the key commit nor a commit
+                holding only a password lands
     4. RECOVER  remove the secrets and confirm a clean commit goes through
 
 Nothing here touches the project repository. Everything happens in a temporary directory that
@@ -127,11 +128,24 @@ def main() -> int:
         count = git(repo, "rev-list", "--count", "HEAD").stdout.strip() or "0"
         record("commit is blocked", count == "0", f"{count} commits in the repository")
 
-        print("\n4. RECOVER")
+        # A password alone, with no key-shaped string and no state file beside it. Until 16 Oct
+        # this commit landed: the guard only knew file names and AWS key shapes.
         (repo / "terraform.tfstate").unlink()
         (repo / "providers.tf").write_text(
             'provider "aws" {\n  region = "ap-southeast-2"\n}\n', encoding="utf-8"
         )
+        (repo / "database.tf").write_text(f'db_password = "{FAKE_DB_PASSWORD}"\n', encoding="utf-8")
+        git(repo, "add", "-A")
+        blocked = git(repo, "commit", "-q", "-m", "add database")
+        count = git(repo, "rev-list", "--count", "HEAD").stdout.strip() or "0"
+        record(
+            "password-only commit is blocked",
+            count == "0" and FAKE_DB_PASSWORD not in blocked.stderr,
+            f"{count} commits; the hook names the key and never prints the value",
+        )
+
+        print("\n4. RECOVER")
+        (repo / "database.tf").write_text("db_password = var.db_password\n", encoding="utf-8")
         git(repo, "add", "-A")
         git(repo, "commit", "-q", "-m", "add provider config")
         count = git(repo, "rev-list", "--count", "HEAD").stdout.strip() or "0"

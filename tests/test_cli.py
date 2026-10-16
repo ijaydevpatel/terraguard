@@ -134,7 +134,7 @@ def test_leak_prevention_demonstration_passes():
         timeout=300,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert "8/8 checks passed" in proc.stdout
+    assert "9/9 checks passed" in proc.stdout
 
 
 def test_fail_on_critical_can_actually_fail(tmp_path):

@@ -40,3 +40,27 @@ def test_blocks_aws_key_in_any_file(tmp_path):
 
 def test_allows_ordinary_source():
     assert _run("terraguard/cli.py") == 0
+
+
+def test_blocks_a_password_with_no_recognisable_shape(tmp_path):
+    """The gap closed on 16 Oct: only the key name marks this value as a secret."""
+    (tmp_path / "main.tf").write_text('db_password = "' + "hunter" + '2xyz"\n', encoding="utf-8")
+    proc = subprocess.run(
+        [sys.executable, str(HOOK), "main.tf"], cwd=str(tmp_path), capture_output=True, text=True
+    )
+    assert proc.returncode == 1
+    assert "db_password" in proc.stderr
+    assert "hunter2xyz" not in proc.stderr
+
+
+def test_allows_a_password_reference(tmp_path):
+    (tmp_path / "main.tf").write_text("db_password = var.db_password\n", encoding="utf-8")
+    assert _run("main.tf", cwd=tmp_path) == 0
+
+
+def test_every_tracked_file_passes_the_guard():
+    """CI runs the guard over `git ls-files`, so the repository itself must pass it."""
+    tracked = subprocess.run(
+        ["git", "ls-files"], cwd=str(REPO_ROOT), capture_output=True, text=True
+    ).stdout.split()
+    assert _run(*tracked) == 0

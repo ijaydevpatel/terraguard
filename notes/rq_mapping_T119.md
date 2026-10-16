@@ -11,7 +11,7 @@ If a row cannot be filled from a committed artefact, it is not an answer.
 | Metric | share of runs raising the control the manifest named |
 | Result | 684 of 684 |
 | Artefact | `datasets/observations.csv`, `results/data_quality.json` |
-| Caveat | Internal consistency over generated scenarios. The end-to-end proof that a real credential is caught and blocked is `scripts/demo_leak_prevention.py`, 8 of 8 checks. |
+| Caveat | Internal consistency over generated scenarios. The end-to-end proof that a real credential is caught and blocked is `scripts/demo_leak_prevention.py`, 9 of 9 checks, including a commit that holds only a password. |
 
 The drift half rests on plan JSON documents written to specification rather than captured from
 a live refresh. Until the AWS runs in the runbook are recorded, RQ1 is answered for repository,
