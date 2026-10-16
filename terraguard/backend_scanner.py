@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 
 from .models import EvidenceSource, Finding, NormalisedEvent
+from .repository_scanner import FIXTURE_PREFIXES
 
 __all__ = [
     "parse_backend_block",
@@ -27,6 +28,9 @@ __all__ = [
 ]
 
 _BACKEND_RE = re.compile(r'backend\s+"(?P<kind>\w+)"\s*\{(?P<body>[^}]*)\}', re.DOTALL)
+# A heredoc body is a string value. terraform/bootstrap/outputs.tf prints a backend block for
+# the user to paste, and the scanner was assessing that string as if it were configuration.
+_HEREDOC_RE = re.compile(r"<<-?\s*(\w+)\n.*?\n\s*\1\b", re.DOTALL)
 _ATTR_RE = re.compile(r'(?P<key>\w+)\s*=\s*"?(?P<value>[^"\n]+)"?')
 
 
@@ -104,18 +108,28 @@ def discover_backend_files(root: str | Path) -> list[Path]:
     for path in sorted(root.rglob("*.tf")):
         if any(part in {".terraform", "corpus", ".git"} for part in path.parts):
             continue
+        # Same rule the repository scanner applies: the fixtures are deliberately insecure test
+        # oracles, so a scan of the repository root must not report them. Scanning a fixture
+        # directory directly still assesses it, because its paths are then relative to itself.
+        if path.relative_to(root).as_posix().startswith(FIXTURE_PREFIXES):
+            continue
         try:
-            body = strip_comments(path.read_text(encoding="utf-8", errors="ignore"))
+            body = _HEREDOC_RE.sub(
+                "", strip_comments(path.read_text(encoding="utf-8", errors="ignore"))
+            )
         except OSError:
             continue
-        if "backend" in body and "terraform" in body:
+        # A file that only mentions the word, like a provider comment or an output description,
+        # declares nothing. Matching the words alone reported terraform/bootstrap/providers.tf as
+        # "no backend block found".
+        if _BACKEND_RE.search(body):
             found.append(path)
     return found
 
 
 def scan_backend_config(text: str) -> list[Finding]:
     """Static assessment of a backend block."""
-    text = strip_comments(text)
+    text = _HEREDOC_RE.sub("", strip_comments(text))
     attrs = parse_backend_block(text)
     if attrs is None:
         return [

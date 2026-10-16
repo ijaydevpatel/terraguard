@@ -7,7 +7,7 @@
 #
 # This file cannot hide a committed state or plan file. Those findings ignore it entirely.
 
-# Explains the key-name rule using "password": "hunter2" as the worked example.
+# Explain the key-name rule with a password set to a sample value as the worked example.
 docs/FEATURES.md
 terraguard/repository_scanner.py
 
@@ -17,3 +17,7 @@ scenarios/generate_corpus.py
 # Exercise the redactor and the scanners against example credentials.
 tests/test_redactor.py
 tests/test_scanners.py
+
+# Plants a fake key, password and state file in a throwaway repository to prove they are
+# caught, never reprinted and blocked at commit. The values are assembled to be found.
+scripts/demo_leak_prevention.py

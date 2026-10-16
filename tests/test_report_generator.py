@@ -166,6 +166,17 @@ def test_csv_has_a_header_and_one_row_per_finding():
     assert len(parsed) == 2
 
 
+def test_report_output_creates_a_missing_directory(tmp_path):
+    """Found by the fresh-clone check: `--output out/report.json` crashed in a new checkout."""
+    report = build_report([row()])
+    json_path = tmp_path / "out" / "report.json"
+    csv_path = tmp_path / "nested" / "deeper" / "report.csv"
+    render_json(report, json_path)
+    render_csv(report, csv_path)
+    assert json.loads(json_path.read_text(encoding="utf-8"))["findings"]
+    assert csv_path.read_text(encoding="utf-8").startswith(REPORT_FIELDS[0])
+
+
 def test_csv_survives_a_detail_containing_a_comma_and_quotes():
     """Details routinely contain both. A hand-rolled writer would corrupt the file."""
     import csv as _csv

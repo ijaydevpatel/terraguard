@@ -93,7 +93,7 @@ def _rows_from_findings(findings, sources, results, run_id: str, scenario_id: st
 
 
 def _render(report, args) -> None:
-    from .report_generator import render_csv, render_json, render_terminal
+    from .report_generator import render_csv, render_json, render_terminal, write_output
 
     if args.format == "json":
         text = render_json(report, args.output)
@@ -102,7 +102,7 @@ def _render(report, args) -> None:
     else:
         text = render_terminal(report)
         if args.output:
-            Path(args.output).write_text(text, encoding="utf-8")
+            write_output(args.output, text)
     if not args.output or args.format == "terminal":
         print(text)
     if args.output:
@@ -277,7 +277,9 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     }
     print(json.dumps(summary, indent=2))
     if args.output:
-        Path(args.output).write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        from .report_generator import write_output
+
+        write_output(args.output, json.dumps(summary, indent=2))
         _echo(f"written: {args.output}")
     return EXIT_OK
 

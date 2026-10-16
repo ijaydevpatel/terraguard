@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # datetime.UTC exists from Python 3.11. The project targets 3.11+, but resolving it this
 # way keeps the package importable on 3.10 and, unlike a try/except import, cannot be
@@ -82,6 +82,10 @@ class DriftRecord(BaseModel):
 
 class Finding(BaseModel):
     """The single currency of the pipeline. Scanners and the drift path both emit these."""
+
+    # `model_confidence` is the severity model's confidence, not a pydantic attribute. Without
+    # this, every CLI run printed a namespace warning above its report.
+    model_config = ConfigDict(protected_namespaces=())
 
     finding_id: str
     scenario_id: str | None = None

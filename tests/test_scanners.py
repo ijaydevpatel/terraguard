@@ -221,6 +221,26 @@ def test_backend_is_discovered_outside_the_root(tmp_path):
     assert [p.name for p in discover_backend_files(tmp_path)] == ["main.tf"]
 
 
+def test_backend_discovery_ignores_heredocs_mentions_and_fixtures(tmp_path):
+    """The repository self-scan failed CI on three false positives, all fixed here."""
+    from terraguard.backend_scanner import discover_backend_files
+
+    (tmp_path / "outputs.tf").write_text(
+        'output "backend_block" {\n  value = <<EOT\nterraform {\n  backend "s3" {\n'
+        '    bucket = "x"\n  }\n}\nEOT\n}\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "providers.tf").write_text(
+        '# no backend here: terraform keeps local state on purpose\nprovider "aws" {}\n',
+        encoding="utf-8",
+    )
+    fixture = tmp_path / "terraform" / "fixtures" / "bad"
+    fixture.mkdir(parents=True)
+    (fixture / "backend.tf").write_text('terraform {\n  backend "local" {}\n}\n', encoding="utf-8")
+    assert discover_backend_files(tmp_path) == []
+    assert [p.name for p in discover_backend_files(fixture)] == ["backend.tf"]
+
+
 def test_workflow_job_level_write_all_is_caught():
     from terraguard.workflow_scanner import scan_workflow_text
 

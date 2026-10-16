@@ -127,6 +127,17 @@ def build_report(
     return records
 
 
+def write_output(path: str | Path, text: str, *, newline: str | None = None) -> None:
+    """Write a report file, creating its directory first.
+
+    The fresh-clone check on 16 Oct failed here: `--output out/report.json` in a new checkout
+    raised FileNotFoundError because `out/` did not exist yet.
+    """
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text, encoding="utf-8", newline=newline)
+
+
 def render_json(report: list[ReportRecord], path: str | Path | None = None) -> str:
     assert_clean(report)
     payload = {
@@ -139,7 +150,7 @@ def render_json(report: list[ReportRecord], path: str | Path | None = None) -> s
     }
     text = json.dumps(payload, indent=2)
     if path:
-        Path(path).write_text(text, encoding="utf-8")
+        write_output(path, text)
     return text
 
 
@@ -158,7 +169,7 @@ def render_csv(report: list[ReportRecord], path: str | Path | None = None) -> st
         writer.writerow(asdict(record))
     text = buffer.getvalue()
     if path:
-        Path(path).write_text(text, encoding="utf-8", newline="")
+        write_output(path, text, newline="")
     return text
 
 

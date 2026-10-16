@@ -42,8 +42,11 @@ STATE = (
     '{"version":4,"resources":[{"type":"aws_db_instance","instances":'
     '[{"attributes":{"password":"' + FAKE_DB_PASSWORD + '"}}]}]}'
 )
+# Both paths are quoted and written with forward slashes. Unquoted, a Windows path such as
+# C:\Users\Jaydev Patel\... splits at the space and sh eats the backslashes, so the hook fails
+# on every commit and the RECOVER step reports a clean commit as blocked.
 HOOK = """#!/bin/sh
-git diff --cached --name-only --diff-filter=ACM | xargs -r {python} {guard}
+git diff --cached --name-only --diff-filter=ACM | xargs -r "{python}" "{guard}"
 """
 
 PASS, FAIL = "PASS", "FAIL"
@@ -113,7 +116,10 @@ def main() -> int:
         hooks.mkdir(parents=True, exist_ok=True)
         hook = hooks / "pre-commit"
         hook.write_text(
-            HOOK.format(python=sys.executable, guard=ROOT / "scripts/check_no_state_files.py"),
+            HOOK.format(
+                python=Path(sys.executable).as_posix(),
+                guard=(ROOT / "scripts" / "check_no_state_files.py").as_posix(),
+            ),
             encoding="utf-8",
         )
         hook.chmod(0o755)
