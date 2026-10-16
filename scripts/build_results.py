@@ -217,9 +217,10 @@ def _write_comparison(report, scores, leakage, path: Path) -> None:
         f"| ungrouped (random) | {leakage['ungrouped_without_rule_inputs']['macro_f1']} | "
         f"{leakage['ungrouped_with_rule_inputs']['macro_f1']} |",
         "",
-        "Grouping, not the feature exclusion, is what defeats the leak: control ids are",
-        "confounded with scenario templates, so a held-out template brings categories the model",
-        "has never seen. The gap in the left-hand column is the price of the honest split.",
+        "Both defences do work. Grouping removes most of the inflation, because control ids are",
+        "confounded with scenario templates and a held-out template brings categories the model",
+        "has never seen. Withholding the rule inputs removes the rest: under grouping they still",
+        "lift the score, which is the model relearning the rule ladder rather than ranking.",
         "",
         "## Class support",
         "",
@@ -235,10 +236,12 @@ def _write_comparison(report, scores, leakage, path: Path) -> None:
         "",
         "## How much weight these numbers carry",
         "",
-        "A small study: the smallest class rests on three independent templates, so differences",
-        "of a few points between models are noise. The drift half of the dataset is empty, so",
-        "none of this covers infrastructure drift, and the labels are one analyst's rubric",
-        "applied consistently rather than reviewed ground truth.",
+        f"The smallest class rests on {min(report.groups_per_class.values(), default=0)} "
+        "independent templates, and these figures come from one split seed.",
+        "`results/fold_stability.md` repeats the split under 20 seeds; quote that range rather",
+        "than the values above. Drift findings are mostly synthetic, with nineteen live AWS",
+        "observations, and the labels are one analyst's rubric applied consistently rather than",
+        "reviewed ground truth.",
         "",
     ]
     path.write_text("\n".join(lines), encoding="utf-8")

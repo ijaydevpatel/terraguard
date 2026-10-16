@@ -1,6 +1,6 @@
 # Severity model comparison
 
-678 findings from 51 scenario templates, grouped cross-validation with 3 splits.
+711 findings from 57 scenario templates, grouped cross-validation with 3 splits.
 
 ## What is being predicted
 
@@ -13,8 +13,8 @@ switches on.
 
 | Model | Macro F1 | Weighted F1 | Accuracy | Recall on high/critical |
 |---|---:|---:|---:|---:|
-| logistic_regression | 0.7789 | 0.8323 | 0.8274 | 0.8519 |
-| random_forest | 0.8198 | 0.874 | 0.8805 | 0.963 |
+| logistic_regression | 0.7016 | 0.7775 | 0.7722 | 0.8225 |
+| random_forest | 0.811 | 0.8711 | 0.8776 | 0.9645 |
 
 ## The deterministic baseline is not in that table, on purpose
 
@@ -31,24 +31,26 @@ rules-versus-models claim belongs in the results chapter yet.
 
 | Split | Rule inputs withheld | Rule inputs included |
 |---|---:|---:|
-| grouped by template | 0.7789 | 0.8451 |
-| ungrouped (random) | 0.9294 | 1.0 |
+| grouped by template | 0.7016 | 0.8449 |
+| ungrouped (random) | 0.9166 | 1.0 |
 
-Grouping, not the feature exclusion, is what defeats the leak: control ids are
-confounded with scenario templates, so a held-out template brings categories the model
-has never seen. The gap in the left-hand column is the price of the honest split.
+Both defences do work. Grouping removes most of the inflation, because control ids are
+confounded with scenario templates and a held-out template brings categories the model
+has never seen. Withholding the rule inputs removes the rest: under grouping they still
+lift the score, which is the model relearning the rule ladder rather than ranking.
 
 ## Class support
 
 | Band | Findings | Independent templates |
 |---|---:|---:|
-| high_or_critical | 486 | 34 |
+| high_or_critical | 507 | 39 |
 | medium | 105 | 11 |
-| non_security_or_low | 87 | 8 |
+| non_security_or_low | 99 | 10 |
 
 ## How much weight these numbers carry
 
-A small study: the smallest class rests on three independent templates, so differences
-of a few points between models are noise. The drift half of the dataset is empty, so
-none of this covers infrastructure drift, and the labels are one analyst's rubric
-applied consistently rather than reviewed ground truth.
+The smallest class rests on 10 independent templates, and these figures come from one split seed.
+`results/fold_stability.md` repeats the split under 20 seeds; quote that range rather
+than the values above. Drift findings are mostly synthetic, with nineteen live AWS
+observations, and the labels are one analyst's rubric applied consistently rather than
+reviewed ground truth.

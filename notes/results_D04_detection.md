@@ -3,7 +3,8 @@
 Draft for the results chapter. Figures come from the generated corpus plus the original
 hand-built fixtures: 684 observations and 678 findings across 56 scenario templates. Every
 configuration was written to disk and scanned by the real pipeline. None of it came from a
-live AWS account, which is the limitation at the end of this section.
+live AWS account. The 19 live AWS observations from 16 Oct are reported separately in D04b
+and are not pooled into these figures.
 
 ## Detection against ground truth
 

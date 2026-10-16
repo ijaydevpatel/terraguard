@@ -125,7 +125,7 @@ def _score(name: str, y_true, y_pred, labels, note: str = "") -> ModelScore:
     )
 
 
-def _cross_val_predict(estimator, records, y, groups, n_splits):
+def _cross_val_predict(estimator, records, y, groups, n_splits, seed=RANDOM_STATE):
     """Manual grouped CV. Returns (y_true_ordered, y_pred_ordered, folds_used).
 
     sklearn's cross_val_predict would do this, but with folds this small a fold can end up
@@ -136,7 +136,7 @@ def _cross_val_predict(estimator, records, y, groups, n_splits):
     from sklearn.model_selection import StratifiedGroupKFold
     from sklearn.pipeline import make_pipeline
 
-    splitter = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=RANDOM_STATE)
+    splitter = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=seed)
     y_true: list[str] = []
     y_pred: list[str] = []
     folds_used = 0

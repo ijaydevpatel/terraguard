@@ -5,7 +5,15 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Started by hand from the Actions tab, this can point the gate at one fixture, which is how
+  # the three recorded runs (clean pass, medium warn, critical fail) are produced without
+  # committing anything insecure to the repository root.
   workflow_dispatch:
+    inputs:
+      target:
+        description: "directory to scan: . or a folder under terraform/fixtures"
+        default: "."
+        required: false
 
 # Least privilege. id-token is needed only for the optional OIDC job below; the scan itself
 # reads the repository and nothing else.
@@ -35,12 +43,29 @@ jobs:
 
       # Critical and high fail the build. Medium warns. A control that could not be assessed
       # warns rather than passing, because missing evidence is not compliance.
+      # The input reaches the shell through an environment variable and is checked against
+      # an allowlist, never interpolated into the script, so it cannot inject a command.
+      - name: Resolve scan target
+        env:
+          TARGET: ${{ inputs.target || '.' }}
+        run: |
+          case "$TARGET" in
+            .) echo "SCAN_ARGS=." >> "$GITHUB_ENV" ;;
+            terraform/fixtures/*)
+              if [ -d "$TARGET" ] && [ "${TARGET#*..}" = "$TARGET" ]; then
+                echo "SCAN_ARGS=$TARGET --no-history" >> "$GITHUB_ENV"
+              else
+                echo "no such fixture: $TARGET"; exit 2
+              fi ;;
+            *) echo "target must be . or a folder under terraform/fixtures"; exit 2 ;;
+          esac
+
       - name: Severity gate
-        run: terraguard scan . --include-optional --fail-on high
+        run: terraguard scan $SCAN_ARGS --include-optional --fail-on high
 
       - name: Machine readable report
         if: always()
-        run: terraguard scan . --include-optional --format json --output terraguard-report.json
+        run: terraguard scan $SCAN_ARGS --include-optional --format json --output terraguard-report.json
 
       # The report is sanitised by assert_clean before it is written, so this upload cannot
       # carry a credential. It is the one artefact the workflow produces.
