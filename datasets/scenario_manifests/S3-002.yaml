@@ -7,7 +7,8 @@ injected_change: public access block disabled
 expected_drift: true
 expected_attribute: block_public_acls
 expected_policy_status: non_compliant
-expected_control: TG-P02
+expected_control: TG-P10
+expected_control_original: TG-P02
 expected_normalised_event: restricted_to_public_network_access
 expected_severity_band: high_or_critical
 expected_evidence_source: terraform_plan_json
@@ -17,3 +18,5 @@ restore: scenarios/restore_baseline.py
 notes: >
   Severity is recorded as a band, not a single class. The final label is assigned using
   the written rubric and reviewed on a sample; see T111 and T112.
+correction: >
+  Corrected 16 Oct after the first live run: expected_control was TG-P02, which contradicts this manifest's own expected_normalised_event (restricted_to_public_network_access), and that event maps to TG-P10. The original value is kept here so the correction can be audited.

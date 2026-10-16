@@ -35,6 +35,14 @@ def main() -> int:
         record(args, "dry-run", {"policy_arn": arn})
         return 0
 
+    # A managed policy holds at most five versions, and every injection and every restore adds
+    # one. The third live run on 16 Oct failed with LimitExceeded. Only old, non-default
+    # versions are removed, so the version currently in force is never touched.
+    versions = iam.list_policy_versions(PolicyArn=arn)["Versions"]
+    stale = sorted((v for v in versions if not v["IsDefaultVersion"]), key=lambda v: v["CreateDate"])
+    for old in stale[: max(0, len(versions) - 4)]:
+        iam.delete_policy_version(PolicyArn=arn, VersionId=old["VersionId"])
+
     statements[0]["Action"] = "*"
     iam.create_policy_version(PolicyArn=arn, PolicyDocument=json.dumps(document), SetAsDefault=True)
     record(args, "injected", {"policy_arn": arn, "change": "Action widened to *"})

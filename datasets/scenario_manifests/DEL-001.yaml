@@ -7,7 +7,8 @@ injected_change: managed bucket deleted outside Terraform
 expected_drift: true
 expected_attribute: resource
 expected_policy_status: non_compliant
-expected_control: TG-P12
+expected_control: TG-P13
+expected_control_original: TG-P12
 expected_normalised_event: out_of_band_deletion
 expected_severity_band: high_or_critical
 expected_evidence_source: terraform_plan_json
@@ -17,3 +18,5 @@ restore: scenarios/restore_baseline.py
 notes: >
   Severity is recorded as a band, not a single class. The final label is assigned using
   the written rubric and reviewed on a sample; see T111 and T112.
+correction: >
+  Corrected 16 Oct after the first live run: expected_control was TG-P12, which contradicts this manifest's own expected_normalised_event (out_of_band_deletion), and that event maps to TG-P13. The original value is kept here so the correction can be audited.

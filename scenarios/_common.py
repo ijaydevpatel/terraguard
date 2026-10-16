@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -75,6 +76,14 @@ def require(condition: bool, message: str) -> None:
     if not condition:
         sys.stderr.write(f"baseline check failed: {message}\n")
         raise SystemExit(2)
+
+
+# ARNs carry the 12-digit account id. The run log is committed, so the id is masked on write.
+_ACCOUNT_IN_ARN = re.compile(r"(arn:aws[a-z-]*:[a-z0-9-]*:[a-z0-9-]*:)\d{12}(:)")
+
+
+def mask_account(text: str) -> str:
+    return _ACCOUNT_IN_ARN.sub(r"\1<account>\2", text)
 
 
 def record(args, action: str, detail: dict) -> None:

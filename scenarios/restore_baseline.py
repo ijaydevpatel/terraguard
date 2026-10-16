@@ -34,6 +34,29 @@ def _capture(args: list[str], cwd: Path | None = None) -> tuple[int, str]:
     return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
 
 
+def _drift_count() -> int | None:
+    """Count drifted resources from the refresh-only plan JSON. None if Terraform failed.
+
+    This replaced `-detailed-exitcode`. On 16 Oct, Terraform 1.16.5 printed "No changes" for a
+    refresh-only plan and still exited 2, so the restore reported drift that did not exist.
+    `resource_drift` in the plan JSON is the same evidence the scanner reads.
+    """
+    plan = BASELINE / "restore-check.tfplan"
+    try:
+        code, _ = _capture(
+            ["terraform", "plan", "-refresh-only", "-input=false", f"-out={plan.name}"],
+            cwd=BASELINE,
+        )
+        if code:
+            return None
+        code, out = _capture(["terraform", "show", "-json", plan.name], cwd=BASELINE)
+        if code:
+            return None
+        return len(json.loads(out).get("resource_drift") or [])
+    finally:
+        plan.unlink(missing_ok=True)
+
+
 def verify_target(profile: str, region: str) -> str | None:
     """Return a refusal reason, or None if this is safe to apply to.
 
@@ -74,6 +97,29 @@ def verify_target(profile: str, region: str) -> str | None:
     return None
 
 
+def _resync_state(args) -> bool:
+    """Clear a stale snapshot that the restore apply itself leaves behind.
+
+    The first live SG-001 run on 16 Oct showed it. The apply reverted the managed ingress rule
+    in AWS, but `aws_security_group.baseline` keeps a computed copy of its ingress list, and
+    that copy was refreshed before the revert. The next refresh-only plan reported 0.0.0.0/0
+    in state against 10.0.0.0/8 in AWS, with AWS already correct.
+
+    A refresh-only apply would fix that, and it would also hide a real leftover by writing it
+    into state. So it only runs after two independent checks agree nothing is left: a normal
+    plan with no changes to make, and the API-side check in reset_aws_baseline.py.
+    """
+    if _run(["terraform", "plan", "-input=false", "-detailed-exitcode"]) != 0:
+        return False
+    reset = Path(__file__).resolve().parents[1] / "scripts" / "reset_aws_baseline.py"
+    check = [sys.executable, str(reset), "--profile", args.profile, "--region", args.region]
+    if subprocess.run(check, check=False).returncode != 0:
+        return False
+    if _run(["terraform", "apply", "-refresh-only", "-input=false", "-auto-approve"]) != 0:
+        return False
+    return _drift_count() == 0
+
+
 def main() -> int:
     args = parse_args("RESTORE", __doc__)
 
@@ -91,14 +137,17 @@ def main() -> int:
         record(args, "restore-failed", {"stage": "apply"})
         return 1
 
-    code = _run(["terraform", "plan", "-refresh-only", "-input=false", "-detailed-exitcode"])
-    if code == 0:
+    drifted = _drift_count()
+    if drifted == 0:
         record(args, "restored", {"drift": "none"})
+        return 0
+    if drifted and _resync_state(args):
+        record(args, "restored", {"drift": "none", "state_resync": True})
         return 0
     # This happened on 13 Oct and was written to a log nobody read, leaving an open 0.0.0.0/0
     # rule in place for a day. `terraform apply` cannot revert a change to something it does
     # not manage, so the message has to name the tool that can.
-    record(args, "restore-incomplete", {"detailed_exitcode": code})
+    record(args, "restore-incomplete", {"drifted_resources": drifted})
     sys.stderr.write(
         "RESTORE INCOMPLETE: drift remains after apply.\n"
         "terraform apply cannot revert a resource it does not manage (R25). Run:\n"

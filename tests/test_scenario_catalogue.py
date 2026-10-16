@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import sys
 from pathlib import Path
 
 import yaml
@@ -98,3 +99,31 @@ def test_state_security_scenarios_need_no_aws():
     for row in rows():
         if row["scenario_group"] == "state_security":
             assert row["needs_aws"].lower() == "false"
+
+
+def test_drift_manifests_agree_with_the_event_to_control_table():
+    """S3-002 and DEL-001 named a control their own expected event does not map to.
+
+    Nothing caught it until the first live run on 16 Oct scored two correct detections as
+    misses. Workflow manifests are excluded: their controls come from the workflow scanner.
+    """
+    from terraguard.drift_normaliser import EVENT_TO_CONTROL
+
+    mapping = {event.value: control for event, control in EVENT_TO_CONTROL.items()}
+    for path in sorted(MANIFESTS.glob("*.yaml")):
+        manifest = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if manifest.get("expected_evidence_source") != "terraform_plan_json":
+            continue
+        event = manifest.get("expected_normalised_event")
+        if event in mapping:
+            assert manifest.get("expected_control") == mapping[event], path.name
+
+
+def test_run_log_masks_the_account_id():
+    sys.path.insert(0, str(ROOT / "scenarios"))
+    from _common import mask_account
+
+    masked = mask_account("arn:aws:iam::123456789012:policy/p arn:aws:s3:::bucket")
+    assert "123456789012" not in masked
+    assert "arn:aws:iam::<account>:policy/p" in masked
+    assert "arn:aws:s3:::bucket" in masked
