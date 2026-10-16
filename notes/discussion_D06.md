@@ -9,6 +9,16 @@ and a state file in a repository shows the tool finds both, never reprints eithe
 stops the commit landing. Detection without prevention is a report nobody acts on, so that
 last part is the claim worth making.
 
+Until 16 Oct that prevention claim was narrower than it read. The commit hook blocked state
+files, plans and AWS key shapes, but a password on its own, which has no shape, went through
+and was only flagged by the scanner after the commit existed. The hook now runs the scanner's
+key-name rule, and the leak demonstration includes a commit holding nothing but a password
+(9 of 9 checks). The same day an extension, TG-P14, carried the check into the account:
+`scan-aws` looks for state files outside the backend, secrets in S3 text objects and
+plaintext SSM parameters. A planted placeholder key and state file were found in the live test
+bucket and removed. It sits outside the 13-control experiment, so it adds a capability without
+adding evidence to any research question's figures.
+
 Drift detection also works against real infrastructure. On 16 Oct, seven kinds of change were
 made to a deployed AWS baseline through the API, six of them three times each. All 18 of
 those runs were detected and matched their ground truth, the security changes failed the gate

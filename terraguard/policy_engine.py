@@ -83,14 +83,24 @@ class ControlAssessment:
 
 
 def load_controls(
-    policy_dir: str | Path = "policies", *, include_optional: bool = False
+    policy_dir: str | Path = "policies",
+    *,
+    include_optional: bool = False,
+    only_extension: bool = False,
 ) -> list[Control]:
-    """Load the catalogue. Optional controls are excluded unless asked for."""
+    """Load the catalogue. Optional controls are excluded unless asked for.
+
+    Extension controls (TG-P14) are never mixed into the experiment's catalogue: they load
+    only with `only_extension`, which returns them alone, so the 13-control assessment behind
+    every recorded result is unchanged by their existence.
+    """
     controls: list[Control] = []
     for path in sorted(Path(policy_dir).glob("*.yaml")):
         doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         for raw in doc.get("controls") or []:
             control = Control.from_dict(raw)
+            if only_extension != (control.tier == "extension"):
+                continue
             if control.tier == "optional" and not include_optional:
                 continue
             controls.append(control)

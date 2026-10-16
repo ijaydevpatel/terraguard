@@ -1,0 +1,21 @@
+# Added 16 Oct as an extension. The 13 controls in the other files define the experiment and
+# every recorded result; this one is loaded only by `terraguard scan-aws`, so adding it does
+# not change a single coverage figure or policy outcome in the dataset.
+controls:
+  - id: TG-P14
+    name: Secrets and Terraform state are not stored readably in AWS
+    tier: extension
+    description: >
+      Keeping credentials out of the repository does not help if they end up in the account
+      instead: a state file copied into an ordinary bucket, a config object holding a
+      password, or a parameter named db_password stored as plain String.
+    evidence_source: aws_api
+    applies_when: AWS credentials and a list of buckets are available
+    decision: >
+      non_compliant if a state or plan object sits outside the state backend, if a text
+      object contains a key-shaped string or a value under a sensitive key name, or if an SSM
+      parameter named like a secret is not SecureString
+    expected_secure_result: state only in the encrypted backend; secrets only in Secrets Manager or SecureString parameters
+    severity_if_violated: critical
+    remediation: Delete the object or parameter, rotate the credential, store it in a secret store.
+    source: AWS Systems Manager Parameter Store documentation (SecureString); HashiCorp state documentation (sensitive data in state)

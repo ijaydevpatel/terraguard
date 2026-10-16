@@ -1,8 +1,9 @@
 """Command-line entry point.
 
-Six subcommands, each one a stage of the pipeline that can be run on its own:
+Seven subcommands, each one a stage of the pipeline that can be run on its own:
 
     terraguard scan      repository, workflow and backend evidence from a directory
+    terraguard scan-aws  secrets and state left readable in S3 and SSM (TG-P14, extension)
     terraguard analyse   drift and policy assessment from a plan JSON
     terraguard collect   run Terraform and capture sanitised evidence
     terraguard train     fit the severity models and write the comparison
@@ -342,6 +343,63 @@ def cmd_collect(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _terraform_outputs(directory: str, names: tuple[str, ...]) -> list[str]:
+    import subprocess
+
+    found = []
+    for name in names:
+        proc = subprocess.run(
+            ["terraform", "output", "-raw", name],
+            cwd=directory,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if proc.returncode == 0 and proc.stdout.strip():
+            found.append(proc.stdout.strip())
+    return found
+
+
+def cmd_scan_aws(args: argparse.Namespace) -> int:
+    """TG-P14: secrets and state left inside the AWS account rather than the repository."""
+    from .aws_secret_scanner import scan_aws_storage
+    from .models import EvidenceSource
+    from .policy_engine import assess, load_controls
+    from .report_generator import build_report
+
+    try:
+        import boto3
+    except ImportError:
+        _echo('boto3 is needed for scan-aws: pip install -e ".[scenarios]"')
+        return EXIT_USAGE
+
+    buckets = list(args.bucket or [])
+    if args.from_terraform:
+        buckets += _terraform_outputs(args.from_terraform, ("test_bucket", "log_bucket"))
+    if not buckets and args.no_ssm:
+        _echo("nothing to scan: pass --bucket, --from-terraform, or drop --no-ssm")
+        return EXIT_USAGE
+
+    session = boto3.Session(profile_name=args.profile, region_name=args.region)
+    findings = scan_aws_storage(
+        session, buckets, state_bucket=args.state_bucket, include_ssm=not args.no_ssm
+    )
+    # Unreadable evidence decides the control's outcome (indeterminate) but is not a finding
+    # about the account, so it stays out of the report and out of the gate count.
+    real = [f for f in findings if not f.raw.get("indeterminate")]
+    for f in findings:
+        if f.raw.get("indeterminate"):
+            _echo(f"warning: {f.resource_address}: {f.detail}")
+
+    controls = load_controls(args.policies, only_extension=True)
+    results = assess(controls, findings, available_evidence={EvidenceSource.AWS_API})
+    rows = _rows_from_findings(real, {EvidenceSource.AWS_API}, results, "scan-aws", "scan-aws")
+    report = build_report(rows, _predictor(args))
+    _echo(f"scanned {len(set(buckets))} bucket(s)" + ("" if args.no_ssm else " and SSM"))
+    _render(report, args)
+    return _gate(report, results, args.fail_on)
+
+
 def _add_output_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--format", choices=("terminal", "json", "csv"), default="terminal")
     p.add_argument("--output", help="write the report to this path as well")
@@ -368,6 +426,20 @@ def build_parser() -> argparse.ArgumentParser:
     analyse_p.add_argument("--plan-json", required=True)
     _add_output_flags(analyse_p)
     analyse_p.set_defaults(func=cmd_analyse)
+
+    aws_p = sub.add_parser(
+        "scan-aws", help="look for secrets and state stored readably in S3 and SSM (TG-P14)"
+    )
+    aws_p.add_argument("--profile", default="default")
+    aws_p.add_argument("--region", default="us-east-1")
+    aws_p.add_argument("--bucket", action="append", help="bucket to scan; repeatable")
+    aws_p.add_argument(
+        "--from-terraform", metavar="DIR", help="also scan buckets named in this stack's outputs"
+    )
+    aws_p.add_argument("--state-bucket", help="the backend bucket, where state is expected")
+    aws_p.add_argument("--no-ssm", action="store_true", help="skip Parameter Store")
+    _add_output_flags(aws_p)
+    aws_p.set_defaults(func=cmd_scan_aws)
 
     collect_p = sub.add_parser("collect", help="run Terraform and capture sanitised evidence")
     collect_p.add_argument("--terraform-dir", default="terraform/baseline")

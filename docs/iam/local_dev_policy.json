@@ -158,6 +158,14 @@
       "Resource": "*"
     },
     {
+      "Sid": "ParameterMetadataForTGP14",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:DescribeParameters"
+      ],
+      "Resource": "*"
+    },
+    {
       "Sid": "Identity",
       "Effect": "Allow",
       "Action": [

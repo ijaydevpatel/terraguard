@@ -56,6 +56,7 @@ terraguard train
 | Command | What it does |
 |---|---|
 | `scan` | repository, workflow and backend checks on a directory, including git history |
+| `scan-aws` | secrets and Terraform state left readable in S3 objects or SSM parameters (TG-P14) |
 | `analyse` | drift and policy assessment from a `terraform show -json` plan |
 | `collect` | runs Terraform and keeps only the sanitised evidence |
 | `train` | fits Logistic Regression and Random Forest with grouped cross-validation |
@@ -96,6 +97,16 @@ python scripts/run_aws_experiment.py --profile default --dry-run
 python scripts/run_aws_experiment.py --profile default
 ```
 
+Secrets can also leak into the account itself: a state file copied into an ordinary bucket, a
+config object holding a key, or a parameter named `db_password` stored as plain `String`.
+`scan-aws` looks for those, reads nothing it does not need, and never prints a value.
+`scripts/demo_aws_secret_scan.py` plants two synthetic objects, scans, and removes them.
+
+```bash
+terraguard scan-aws --profile default --from-terraform terraform/baseline --fail-on high
+python scripts/demo_aws_secret_scan.py --profile default
+```
+
 ## Repository layout
 
 ```
@@ -114,7 +125,10 @@ notes/decisions.md   running design log; the source of the methodology chapter
 ## Safety rules this repo enforces
 
 1. `.gitignore` plus a custom pre-commit hook refuse `*.tfstate`, `*.tfstate.backup`, saved
-   plans and state-derived JSON, and any file containing an AWS access key id.
+   plans and state-derived JSON, any file containing an AWS access key id, and any file with a
+   value under a sensitive key name such as `password`, `token` or `secret_key`. The hook runs
+   the same rule as `terraguard scan`, so a password with no recognisable shape is stopped
+   before the commit exists rather than flagged after it.
 2. `terraguard.redactor` runs **on write**. The binary plan and raw plan JSON live only inside
    a temp directory and are deleted in a `finally` block; only the sanitised copy is kept.
 3. Every credential-shaped value in this repository is the synthetic marker
@@ -135,6 +149,9 @@ remediation, no dashboard.
   with each other but not with the rules.
 - Most observations come from the synthetic corpus. The live AWS runs cover seven scenarios,
   19 observations in all.
+- `scan-aws` covers S3 objects and SSM parameters only. Secrets Manager, Lambda environment
+  variables and EC2 user data are not read. It is an extension (TG-P14) outside the 13-control
+  experiment, so it has no dataset rows, and SSM needs `ssm:DescribeParameters`.
 
 ## License
 

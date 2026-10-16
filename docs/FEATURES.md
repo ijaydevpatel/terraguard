@@ -61,6 +61,10 @@ reports those separately so the remediation is different: purge history, not jus
 | **Value under a sensitive key name** - `password`, `secret`, `token`, `api_key`, `client_secret`, `connection_string` … | TG-P06 | built |
 | Suppresses variable references, placeholders and dummies (`var.pw`, `REPLACE_ME`, `YOUR_KEY`, `null`) | TG-P06 | built |
 | Reports the key name and a character count, never the value | TG-P06 | built |
+| **Pre-commit hook blocks a sensitive-key value**, not only key shapes and state files | TG-P06 | built 16 Oct |
+| State or plan object in an S3 bucket other than the backend (`scan-aws`) | TG-P14 (extension) | built 16 Oct |
+| Key shape or sensitive-key value inside an S3 text object (`scan-aws`) | TG-P14 (extension) | built 16 Oct |
+| SSM parameter named like a secret but stored as `String` (`scan-aws`) | TG-P14 (extension) | built 16 Oct |
 
 The key-name rule matters because shape-based patterns only catch credentials that look like
 credentials. `"password": "hunter2"` has no recognisable shape, and state files are full of
