@@ -51,7 +51,10 @@ AWS Security Hub and OpenSSF Scorecard, which nobody here wrote, the rules agree
 the 159 findings that have one, Random Forest on 67.5% and Logistic Regression on 55.5%
 (D05). The models do not beat the rules they learned from. That holds for under a quarter of
 the findings: state files and committed secrets, the core of this project, have no published
-severity to compare against, and the blind labels for those types come from the author.
+severity to compare against. Blind labels on one finding of each type agree with the rules on
+15 of 20 (kappa 0.49), and four of the five disagreements share one reason: the rules rate a
+removed protection as an exposure, the labeller as a precondition. Those labels come from the
+author, so they are weaker evidence than an independent reviewer would give.
 
 **The corpus is mostly synthetic.** Every configuration in the 684 synthetic runs was written by
 a generator I designed. The findings are genuine detections of real misconfigurations, but the

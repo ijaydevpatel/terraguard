@@ -73,6 +73,23 @@ committed state files and secrets, have no published severity at all, which is i
 the standards this project works against. A blind self-labelled sample (T112, part two) covers
 those types, with the limitation that the labeller is the project's author.
 
+## Blind labels (17 Oct)
+
+Twenty findings, one per finding type, were labelled blind on a plain impact scale, without
+the rule's band or the control id (`results/blind_label_check.md`). They agree with the rules on
+15 of 20 (Cohen's kappa 0.49, moderate) and with the published severity on 7 of the 8 items
+that have one.
+
+The disagreements follow a pattern rather than scattering. In four of five, the rules say
+high_or_critical and the blind label says medium, each time with the same reason: the finding
+removes a protection, but an attacker still needs a further step before anything is exposed.
+Bucket encryption removed, an unencrypted backend setting, a deleted or disabled public
+access block. The rules treat a removed control as the exposure; the labeller treats it as the
+precondition. The fifth runs the other way: a workflow token broader than read-only, medium
+under the rules, high to the labeller and High under OpenSSF Scorecard. Two sources outside the
+rules now place that finding higher, which makes it the clearest candidate for a rubric change
+in future work. No rule was changed after the comparison.
+
 ## Leakage check
 
 Logistic Regression, same data, four ways:

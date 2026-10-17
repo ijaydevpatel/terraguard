@@ -1,0 +1,21 @@
+item,label,confidence,note
+1,medium,2,Data at rest is no longer encrypted. Someone still needs read access to the bucket before anything leaks.
+2,medium,2,Two applies running at once can corrupt the state. Nothing is exposed by this alone.
+3,high_or_critical,2,"State holds secrets in plain text and sits in the working directory, one git add away from the repo."
+4,high_or_critical,2,"Any step in the job, including third-party actions, gets a token that can push code and change the repo."
+5,medium,2,"Whole public access block is gone, so a public ACL or policy would now take effect. Someone still has to add one."
+6,high_or_critical,2,"Static keys don't expire. If the workflow or a dependency is compromised, the keys work from anywhere until rotated."
+7,high_or_critical,2,"Plans can show sensitive values, and job logs are readable by anyone with read access to the repo."
+8,high_or_critical,2,"Going by the name this bucket held evidence. If so, the record of what happened is gone."
+9,medium,2,"Future S3 requests stop being logged. Weaker detection, but past logs and CloudTrail are still there."
+10,non_security_or_low,3,Tag value change only.
+11,high_or_critical,3,"A copy of state in the repo. It usually holds secrets in plain text, and git history keeps it after deletion."
+12,high_or_critical,3,Wildcard policy grants far more power than intended.
+13,medium,2,State in the S3 backend is stored unencrypted. Still needs access to the state bucket to read it.
+14,high_or_critical,2,"Ingress open to the internet. Port isn't shown here, so how bad it is depends on what listens there."
+15,high_or_critical,3,"Wildcard on a role policy, so anything running as that role can do almost anything."
+16,high_or_critical,3,CloudTrail off means account activity stops being recorded. Classic step before or during an attack.
+17,high_or_critical,3,SSH open to the whole internet.
+18,medium,2,"Public ACLs are no longer blocked on this bucket. Name says test, so maybe less data in it, but still worth checking."
+19,non_security_or_low,3,Name tag change only.
+20,high_or_critical,1,"State and plans carry secrets, and the cache can be restored by other workflow runs. Depends on who can trigger runs."
