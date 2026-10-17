@@ -1,0 +1,10 @@
+# Reviewed false positives from the full-history gitleaks scan on 17 Oct 2026 (B03).
+# Each is a synthetic value that exists to test or demonstrate detection. Every entry is a
+# single commit and line, so a new secret in the same file is still reported.
+
+# AWS documentation placeholder secret, planted by the leak demonstration
+16d817bd50013ca0e3312efeff1f7dfe35521019:scripts/demo_leak_prevention.py:generic-api-key:32
+# PEM header followed by 40 x characters; not a usable key
+f171cf849998e94699a6a7ed8db37dba6eab5e3c:scenarios/generate_corpus.py:private-key:94
+# test string abcdef123456 for the key-name rule
+0156ebca52d9c249927dbba36980706c716ce71b:tests/test_scanners.py:generic-api-key:119
