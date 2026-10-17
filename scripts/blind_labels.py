@@ -104,7 +104,7 @@ def main() -> int:
         mark = "" if band == mine else " (differs)"
         lines.append(f"| {item} | {key[0]} {key[2]} | {band} | {mine}{mark} | {ext} | {sure} |")
     lines += ["", "## Disagreements and decisions (T113)", ""]
-    for item, key, band, mine, ext, sure, note in disagreements:
+    for item, key, band, mine, ext, _sure, note in disagreements:
         lines.append(
             f"- **#{item} {key[0]} on {key[2]}**: rule {band}, blind {mine}, "
             f"published {ext}. Labeller's reason: {note}"
