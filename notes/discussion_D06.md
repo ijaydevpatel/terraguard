@@ -32,6 +32,15 @@ The live run found three more problems of the same kind, none of which any offli
 reach: two ground-truth manifests that named the wrong control, a restore that reported drift
 which was not there, and a Terraform exit code that contradicted its own output.
 
+The gate also works where it is meant to run. Three GitHub Actions runs on 17 Oct gave the
+designed outcomes: the clean fixture passed, the deprecated-lock fixture passed with a medium
+warning, and the exposed-state fixture failed the build. That last report named the state file,
+its backup and a saved plan, which between them hold three synthetic secrets, and contained none
+of the three values. Running in CI costs almost nothing extra in analysis: the gate step took a
+second or less, against 0.75 to 0.83 s locally. The 15 to 18 s each job took was checkout and
+package installation, so the practical cost of adding the gate to a pipeline is setup time,
+which caching can cut, and not the scan (`results/ci_runs.md`).
+
 ## What it does not establish
 
 **The severity question is unanswered.** The labels come from the same rubric the deterministic

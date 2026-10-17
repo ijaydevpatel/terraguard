@@ -12,6 +12,7 @@
 | Account id in tracked files | masked as `<account>` in `datasets/injection_runs.jsonl`; `record()` now masks on write |
 | Attribute values in `findings.csv` for live runs | none: details carry categories such as `restricted -> public`, never values |
 | Leak demonstration | 9/9: a planted key and password are found, never reprinted, and the commit is blocked, including a commit holding only a password |
+| CI artefacts, runs #3 to #5 on 17 Oct | none of the three `terraguard-report.json` files holds a key shape, a sensitive-key value, any fixture value, or any of the three synthetic secrets in the exposed-state fixture (`results/ci_runs.md`) |
 
 Two things are outside this check. `build/` holds the experiment logs, which name the IAM
 user and account; it is gitignored and stays local. The account id also appears in one
