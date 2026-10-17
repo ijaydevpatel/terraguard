@@ -52,9 +52,16 @@ def guard() -> int:
 
     xargs splits into several invocations when the list is long; Windows has a shorter
     command-line limit than Linux, so the chunking here is smaller than xargs would use.
+
+    New files are included as well as tracked ones. On 16 Oct a test file that was still
+    untracked passed this step locally and then failed CI, because by the time CI ran it the
+    file was committed and the guard read it for the first time.
     """
     listing = subprocess.run(
-        ["git", "ls-files"], cwd=str(ROOT), capture_output=True, text=True
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
     ).stdout.split()
     say(f"\n=== State and plan file guard  ({len(listing)} tracked files)")
     worst = 0

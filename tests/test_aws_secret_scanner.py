@@ -61,18 +61,18 @@ def test_state_in_the_backend_is_expected_and_not_read():
 
 
 def test_key_and_password_in_objects_are_found_and_never_echoed():
-    password = "Pr0d" + "DbPass!"
+    planted = "Pr0d" + "DbPass!"
     s3 = FakeS3(
         {
             "config/app.env": f"AWS_ACCESS_KEY_ID={fake_key()}\n".encode(),
-            "config/db.yaml": f"db_password: {password}\n".encode(),
+            "config/db.yaml": f"db_password: {planted}\n".encode(),
         }
     )
     findings = scan_s3_objects(s3, "app-config")
     details = " ".join(f.detail for f in findings)
     assert "AWS access key id found in an S3 object" in details
     assert "sensitive key 'db_password'" in details
-    assert fake_key() not in details and password not in details
+    assert fake_key() not in details and planted not in details
 
 
 def test_logs_and_compressed_objects_are_skipped():
