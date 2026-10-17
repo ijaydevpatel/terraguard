@@ -1,0 +1,20 @@
+control_id,normalised_event,resource_type,external_source,external_control,external_severity,external_band,match,source_url,note
+TG-P10,restricted_to_public_network_access,aws_vpc_security_group_ingress_rule,AWS Security Hub,EC2.13,High,high_or_critical,direct,https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html,SSH (port 22) open to 0.0.0.0/0
+TG-P10,restricted_to_public_network_access,aws_security_group,AWS Security Hub,EC2.13,High,high_or_critical,direct,https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html,same change seen through the parent group's ingress list
+TG-P10,restricted_to_public_network_access,aws_s3_bucket_public_access_block,AWS Security Hub,S3.8,High,high_or_critical,direct,https://docs.aws.amazon.com/securityhub/latest/userguide/s3-controls.html,bucket-level block public access disabled
+TG-P11,privilege_expansion,aws_iam_policy,AWS Security Hub,IAM.1,High,high_or_critical,direct,https://docs.aws.amazon.com/securityhub/latest/userguide/iam-controls.html,"Action widened to * on a customer managed policy"
+TG-P11,privilege_expansion,aws_iam_role_policy,AWS Security Hub,IAM.1,High,high_or_critical,partial,https://docs.aws.amazon.com/securityhub/latest/userguide/iam-controls.html,"same condition on an inline policy; IAM.1 itself only evaluates customer managed policies"
+TG-P12,security_logging_disabled,aws_cloudtrail,AWS Security Hub,CloudTrail.3,High,high_or_critical,direct,https://docs.aws.amazon.com/securityhub/latest/userguide/cloudtrail-controls.html,the only trail stops logging
+TG-P12,security_logging_disabled,aws_s3_bucket_logging,AWS Security Hub,S3.9,Medium,medium,direct,https://docs.aws.amazon.com/securityhub/latest/userguide/s3-controls.html,server access logging disabled
+TG-P08,privilege_expansion,repository_file,OpenSSF Scorecard,Token-Permissions,High,high_or_critical,direct,https://github.com/ossf/scorecard/blob/main/docs/checks.md,workflow token broader than read-only
+TG-P12,encryption_disabled,aws_s3_bucket_server_side_encryption_configuration,none,,,,none,https://docs.aws.amazon.com/securityhub/latest/userguide/s3-controls.html,"S3.4 no longer listed; S3 encrypts every bucket by default since Jan 2023"
+TG-P13,out_of_band_deletion,aws_s3_bucket,none,,,,none,,no published control rates an out-of-band deletion
+TG-P13,out_of_band_deletion,aws_s3_bucket_public_access_block,none,,,,none,,no published control rates an out-of-band deletion
+TG-P01,insecure_state_handling,repository_file,none,,,,none,,no published severity for a committed state file
+TG-P02,insecure_state_handling,repository_file,none,,,,none,,no published severity for a local backend
+TG-P03,insecure_state_handling,repository_file,none,,,,none,,no published severity for an unencrypted backend setting
+TG-P04,insecure_state_handling,repository_file,none,,,,none,,no published severity for missing state locking
+TG-P06,sensitive_data_exposure,repository_file,none,,,,none,,secret scanners report exposures without a severity scale
+TG-P07,insecure_state_handling,repository_file,none,,,,none,,no published severity for a committed or uploaded plan
+TG-P09,privilege_expansion,repository_file,none,,,,none,,"IAM.3 is about key rotation, not keys referenced in CI"
+-,non_security_operational_drift,*,none,,,,none,,tag and description changes have no security control

@@ -43,12 +43,15 @@ which caching can cut, and not the scan (`results/ci_runs.md`).
 
 ## What it does not establish
 
-**The severity question is unanswered.** The labels come from the same rubric the deterministic
-baseline implements, so the baseline scores 1.0 by construction and cannot be ranked against the
-models. Across 20 grouped split seeds, Logistic Regression averages 0.73 macro F1 (0.60 to 0.80)
-and Random Forest 0.80 (0.66 to 0.86), with the forest ahead on 17 of 20. Both are predicting
-one analyst's rubric from context, not predicting severity. Closing this needs labels from
-outside the rules (T112), which takes a person rather than more code.
+**The severity question is only partly answered.** The training labels come from the same rubric
+the deterministic baseline implements, so the baseline scores 1.0 by construction against them.
+Across 20 grouped split seeds, Logistic Regression averages 0.73 macro F1 (0.60 to 0.80) and
+Random Forest 0.80 (0.66 to 0.86) at reproducing that rubric. Against severities published by
+AWS Security Hub and OpenSSF Scorecard, which nobody here wrote, the rules agree on 66.0% of
+the 159 findings that have one, Random Forest on 67.5% and Logistic Regression on 55.5%
+(D05). The models do not beat the rules they learned from. That holds for under a quarter of
+the findings: state files and committed secrets, the core of this project, have no published
+severity to compare against, and the blind labels for those types come from the author.
 
 **The corpus is mostly synthetic.** Every configuration in the 684 synthetic runs was written by
 a generator I designed. The findings are genuine detections of real misconfigurations, but the

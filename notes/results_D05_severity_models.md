@@ -48,6 +48,31 @@ evidence. While the labels come from one of the contestants the comparison canno
 and no rules versus models claim belongs in the results chapter. Breaking the circularity
 needs the independent review of a sample (T112) and the disagreement log (T113).
 
+## Against labels nobody on the project wrote (17 Oct)
+
+AWS Security Hub and OpenSSF Scorecard publish a severity for some of the same
+misconfigurations. `scripts/external_labels.py` matches each finding type to those controls,
+with the documentation page for every match in `datasets/external_severity_map.csv`, and
+scores the rules and the models against the published band.
+
+| Predictor | Agreement with published band, 159 findings |
+|---|---|
+| Rules | 66.0% (Cohen's kappa 0.24) |
+| Random Forest | 67.5% mean over 20 split seeds (56.6% to 90.6%) |
+| Logistic Regression | 55.5% mean over 20 split seeds (43.4% to 73.6%) |
+
+Seven of the eight referenced finding types agree with the rules exactly. The eighth carries
+all the disagreement: a workflow token broader than read-only, which the rules place in medium
+and OpenSSF Scorecard rates High, across 54 findings. The rule was not changed afterwards;
+tuning it to the test would make the test meaningless.
+
+So on the evidence an outside source can rate, Random Forest is level with the rules and
+Logistic Regression is behind. That is a partial answer to RQ2, and the honest one: the models
+do not beat the rules they learned from. It covers 159 of 711 findings. The other 552, mostly
+committed state files and secrets, have no published severity at all, which is itself a gap in
+the standards this project works against. A blind self-labelled sample (T112, part two) covers
+those types, with the limitation that the labeller is the project's author.
+
 ## Leakage check
 
 Logistic Regression, same data, four ways:

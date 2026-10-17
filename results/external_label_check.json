@@ -1,0 +1,37 @@
+{
+  "models_vs_external_20_seeds": {
+    "logistic_regression": {
+      "mean_agreement": 0.5547,
+      "min": 0.434,
+      "max": 0.7358
+    },
+    "random_forest": {
+      "mean_agreement": 0.6745,
+      "min": 0.566,
+      "max": 0.9057
+    }
+  },
+  "findings": 711,
+  "with_external_reference": 159,
+  "without_external_reference": 552,
+  "agreement": 105,
+  "agreement_rate": 0.6604,
+  "cohen_kappa": 0.2392,
+  "confusion_rule_vs_external": {
+    "high_or_critical": {
+      "high_or_critical": 90,
+      "medium": 0,
+      "non_security_or_low": 0
+    },
+    "medium": {
+      "high_or_critical": 54,
+      "medium": 15,
+      "non_security_or_low": 0
+    },
+    "non_security_or_low": {
+      "high_or_critical": 0,
+      "medium": 0,
+      "non_security_or_low": 0
+    }
+  }
+}
