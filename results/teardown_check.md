@@ -26,3 +26,16 @@ own report.
 Nothing created by this project remains in the account. The IAM user `terraguard-dev` and its
 access key were created by hand in the console and are not managed by Terraform; removing
 them is a separate console step.
+
+## Cost (T108)
+
+The account is shared with another course project, and the `Project` tag that every TerraGuard
+resource carried was never activated as a cost allocation tag. Cost Explorer therefore cannot
+filter spend by project, and activating the tag now would not apply to costs already incurred.
+A TerraGuard-only bill is not available.
+
+What can be shown is that no further TerraGuard cost is possible: every resource above was
+confirmed absent after teardown. The project used S3 and CloudTrail plus free services (IAM,
+security groups, the first two budgets), and both budget alarms at 5 and 15 USD were in place
+from bootstrap to teardown. Activating the project tag on the first day, or using a dedicated
+account, would have made the exact figure available (R31).
