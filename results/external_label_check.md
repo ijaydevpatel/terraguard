@@ -22,8 +22,8 @@ rating than the rules it learned from.
 | Predictor | Agreement with published band |
 |---|---|
 | Rules | 66.0% |
-| logistic_regression | 55.5% (range 43.4% to 73.6%) |
-| random_forest | 67.5% (range 56.6% to 90.6%) |
+| logistic_regression | 52.6% (range 43.4% to 75.5%) |
+| random_forest | 62.6% (range 47.2% to 75.5%) |
 
 552 findings have no published equivalent:
 

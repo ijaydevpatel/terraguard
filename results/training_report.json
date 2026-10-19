@@ -65,20 +65,20 @@
     },
     {
       "name": "logistic_regression",
-      "macro_f1": 0.7016,
-      "weighted_f1": 0.7775,
-      "accuracy": 0.7722,
+      "macro_f1": 0.7685,
+      "weighted_f1": 0.8272,
+      "accuracy": 0.8228,
       "per_class": {
         "high_or_critical": {
-          "precision": 0.8528,
-          "recall": 0.8225,
-          "f1": 0.8373,
+          "precision": 0.8944,
+          "recall": 0.8521,
+          "f1": 0.8727,
           "support": 507
         },
         "medium": {
-          "precision": 0.4286,
-          "recall": 0.5143,
-          "f1": 0.4675,
+          "precision": 0.5682,
+          "recall": 0.7143,
+          "f1": 0.6329,
           "support": 105
         },
         "non_security_or_low": {
@@ -90,13 +90,13 @@
       },
       "confusion": [
         [
-          417,
-          72,
+          432,
+          57,
           18
         ],
         [
-          51,
-          54,
+          30,
+          75,
           0
         ],
         [
@@ -105,25 +105,25 @@
           78
         ]
       ],
-      "high_risk_recall": 0.8225,
+      "high_risk_recall": 0.8521,
       "note": "3/3 folds usable, grouped by scenario template"
     },
     {
       "name": "random_forest",
-      "macro_f1": 0.811,
-      "weighted_f1": 0.8711,
-      "accuracy": 0.8776,
+      "macro_f1": 0.8626,
+      "weighted_f1": 0.9046,
+      "accuracy": 0.9072,
       "per_class": {
         "high_or_critical": {
-          "precision": 0.8763,
-          "recall": 0.9645,
-          "f1": 0.9183,
+          "precision": 0.9061,
+          "recall": 0.9704,
+          "f1": 0.9371,
           "support": 507
         },
         "medium": {
-          "precision": 0.76,
-          "recall": 0.5429,
-          "f1": 0.6333,
+          "precision": 0.8333,
+          "recall": 0.7143,
+          "f1": 0.7692,
           "support": 105
         },
         "non_security_or_low": {
@@ -135,13 +135,13 @@
       },
       "confusion": [
         [
-          489,
-          18,
+          492,
+          15,
           0
         ],
         [
-          48,
-          57,
+          30,
+          75,
           0
         ],
         [
@@ -150,13 +150,13 @@
           78
         ]
       ],
-      "high_risk_recall": 0.9645,
+      "high_risk_recall": 0.9704,
       "note": "3/3 folds usable, grouped by scenario template"
     }
   ],
   "leakage": {
-    "macro_f1": 0.8449,
-    "accuracy": 0.8734,
+    "macro_f1": 0.8876,
+    "accuracy": 0.9156,
     "folds_used": 3,
     "interpretation": "Measured under the same grouped folds. Compare against the ungrouped figure: if grouping alone suppresses the leak, that is because control ids are template-specific, so a held-out template contributes categories the model never saw in training."
   },
@@ -199,21 +199,21 @@
     }
   },
   "importances": {
-    "detail_length": 0.1959,
-    "run_policy_status=compliant": 0.0985,
-    "run_policy_status=non_compliant": 0.09,
-    "persistence_across_runs": 0.0887,
-    "evidence_source=repository": 0.0665,
-    "assessment_coverage": 0.0593,
-    "evidence_source=terraform_plan_json": 0.0525,
+    "detail_length": 0.1981,
+    "run_policy_status=compliant": 0.0983,
+    "run_policy_status=non_compliant": 0.0905,
+    "persistence_across_runs": 0.0897,
+    "evidence_source=repository": 0.0631,
+    "assessment_coverage": 0.0605,
+    "evidence_source=terraform_plan_json": 0.0524,
     "resource_type=repository_file": 0.0519,
-    "path_mentions_permission": 0.051,
-    "is_remote_drift": 0.045,
-    "findings_in_run": 0.0341,
-    "resource_type=aws_s3_bucket_logging": 0.0256,
-    "is_state_artefact": 0.0213,
-    "attribute_depth": 0.0202,
-    "evidence_source=backend_config": 0.0187
+    "path_mentions_permission": 0.0498,
+    "is_remote_drift": 0.0456,
+    "findings_in_run": 0.0333,
+    "resource_type=aws_s3_bucket_logging": 0.0252,
+    "is_state_artefact": 0.0203,
+    "attribute_depth": 0.0197,
+    "evidence_source=workflow": 0.0187
   },
   "warnings": []
 }

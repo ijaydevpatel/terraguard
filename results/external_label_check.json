@@ -1,14 +1,14 @@
 {
   "models_vs_external_20_seeds": {
     "logistic_regression": {
-      "mean_agreement": 0.5547,
+      "mean_agreement": 0.5264,
       "min": 0.434,
-      "max": 0.7358
+      "max": 0.7547
     },
     "random_forest": {
-      "mean_agreement": 0.6745,
-      "min": 0.566,
-      "max": 0.9057
+      "mean_agreement": 0.6264,
+      "min": 0.4717,
+      "max": 0.7547
     }
   },
   "findings": 711,

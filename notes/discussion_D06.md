@@ -45,10 +45,10 @@ which caching can cut, and not the scan (`results/ci_runs.md`).
 
 **The severity question is only partly answered.** The training labels come from the same rubric
 the deterministic baseline implements, so the baseline scores 1.0 by construction against them.
-Across 20 grouped split seeds, Logistic Regression averages 0.73 macro F1 (0.60 to 0.80) and
-Random Forest 0.80 (0.66 to 0.86) at reproducing that rubric. Against severities published by
+Across 20 grouped split seeds, Logistic Regression averages 0.74 macro F1 (0.68 to 0.79) and
+Random Forest 0.84 (0.78 to 0.92) at reproducing that rubric. Against severities published by
 AWS Security Hub and OpenSSF Scorecard, which nobody here wrote, the rules agree on 66.0% of
-the 159 findings that have one, Random Forest on 67.5% and Logistic Regression on 55.5%
+the 159 findings that have one, Random Forest on 62.6% and Logistic Regression on 52.6%
 (D05). The models do not beat the rules they learned from. That holds for under a quarter of
 the findings: state files and committed secrets, the core of this project, have no published
 severity to compare against. Blind labels on one finding of each type agree with the rules on
@@ -72,8 +72,8 @@ measured on a single scenario.
 **Circular labelling.** Covered above, and the single largest threat. Risk R20.
 
 **Single-seed model figures.** Adding the live findings moved Logistic Regression from 0.7789 to
-0.7016 and Random Forest from 0.8198 to 0.811 at a fixed seed, by way of 0.8874 in between,
-with the old data still reproducing the old numbers exactly. The 20-seed means moved by under
+0.7016 and Random Forest from 0.8198 to 0.811 at a fixed seed, by way of 0.8874 in between.
+Those last values could not be reproduced on 20 Oct; the committed data gives 0.7685 and 0.8626 (D05). The 20-seed means moved by under
 0.005 over the same changes. With three grouped folds, which templates share a fold matters about as much
 as the model. Any single macro F1 in this project should be read with the fold-stability range
 beside it (`results/fold_stability.md`).

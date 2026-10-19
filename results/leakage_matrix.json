@@ -1,11 +1,11 @@
 {
   "grouped_without_rule_inputs": {
-    "macro_f1": 0.7016,
-    "accuracy": 0.7722
+    "macro_f1": 0.7685,
+    "accuracy": 0.8228
   },
   "grouped_with_rule_inputs": {
-    "macro_f1": 0.8449,
-    "accuracy": 0.8734
+    "macro_f1": 0.8876,
+    "accuracy": 0.9156
   },
   "ungrouped_without_rule_inputs": {
     "macro_f1": 0.9166,

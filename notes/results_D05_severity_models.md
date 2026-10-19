@@ -15,13 +15,18 @@ remote, whether sensitive data was involved, run level counts. They never see `c
 
 | Model | Macro F1 | Weighted F1 | Accuracy | Recall on high/critical |
 |---|---:|---:|---:|---:|
-| Logistic Regression | 0.7016 | 0.7775 | 0.7722 | 0.8225 |
-| Random Forest | 0.811 | 0.8711 | 0.8776 | 0.9645 |
+| Logistic Regression | 0.7685 | 0.8272 | 0.8228 | 0.8521 |
+| Random Forest | 0.8626 | 0.9046 | 0.9072 | 0.9704 |
 
 Random Forest leads on every column at this split seed. These single-seed figures moved twice
 on 16 Oct. After the first seven live rows, Logistic Regression went from 0.7789 to 0.7324 and
-Random Forest from 0.8198 to 0.8874; after the repeat runs they went to 0.7016 and 0.811. The
-old data still reproduces the old figures exactly, so nothing in the pipeline changed. New
+Random Forest from 0.8198 to 0.8874; after the repeat runs they went to 0.7016 and 0.811.
+
+**Correction, 20 Oct.** Re-running `build_results.py` and `fold_stability.py` on the committed
+dataset and code gives the figures in the tables here, under Python 3.14 and 3.15 alike, and at
+both a9d54e4 and cee184e. The 0.7016 and 0.811 values, and the 20-seed means that went with them,
+could not be reproduced from anything committed, so every model result was regenerated and the
+report now quotes the reproducible values. New
 templates changed which templates share a fold, and with three folds that alone moves both
 models by several points.
 
@@ -32,10 +37,10 @@ fixed (`results/fold_stability.md`).
 
 | Model | Mean macro F1 | SD | Min | Max |
 |---|---:|---:|---:|---:|
-| Logistic Regression | 0.7263 | 0.0461 | 0.5973 | 0.8032 |
-| Random Forest | 0.8037 | 0.0531 | 0.66 | 0.8626 |
+| Logistic Regression | 0.7423 | 0.0362 | 0.6796 | 0.7858 |
+| Random Forest | 0.8449 | 0.038 | 0.7793 | 0.9234 |
 
-Random Forest scored higher on 17 of 20 seeds, so the ordering mostly holds. The means are
+Random Forest scored higher on all 20 seeds, so the ordering holds. The means are
 also the stable figure: between the two regenerations on 16 Oct they moved by under 0.005
 while the single-seed values moved by up to 0.08. The size of the gap does
 not: a reader given one seed could be told anything from a near tie to a 0.15 lead. The
@@ -58,8 +63,8 @@ scores the rules and the models against the published band.
 | Predictor | Agreement with published band, 159 findings |
 |---|---|
 | Rules | 66.0% (Cohen's kappa 0.24) |
-| Random Forest | 67.5% mean over 20 split seeds (56.6% to 90.6%) |
-| Logistic Regression | 55.5% mean over 20 split seeds (43.4% to 73.6%) |
+| Random Forest | 62.6% mean over 20 split seeds (47.2% to 75.5%) |
+| Logistic Regression | 52.6% mean over 20 split seeds (43.4% to 75.5%) |
 
 Seven of the eight referenced finding types agree with the rules exactly. The eighth carries
 all the disagreement: a workflow token broader than read-only, which the rules place in medium
@@ -96,18 +101,18 @@ Logistic Regression, same data, four ways:
 
 | Split | Rule inputs withheld | Rule inputs included |
 |---|---:|---:|
-| Grouped by template | 0.7016 | 0.8449 |
+| Grouped by template | 0.7685 | 0.8876 |
 | Ungrouped (random) | 0.9166 | 1.0 |
 
 On the small corpus the rule inputs made no difference under grouping, and the conclusion
 recorded at the time was that grouping alone defeated the leak. **That conclusion was an
 artefact of having too few templates.** With 57 templates, many of which share a
-control id, the rule inputs lift the grouped score from 0.7016 to 0.8449, and an ungrouped
+control id, the rule inputs lift the grouped score from 0.7685 to 0.8876, and an ungrouped
 split with them reaches 1.0 - a perfect score that measures nothing except the model
 rediscovering the lookup table.
 
 Both defences are therefore doing work, and the earlier write-up understated the feature
-exclusion. Grouping alone is worth 0.215 macro F1 of inflation avoided.
+exclusion. Grouping alone is worth 0.148 macro F1 of inflation avoided.
 
 ## Class support
 

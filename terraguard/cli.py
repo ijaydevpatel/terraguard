@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -37,6 +38,9 @@ except Exception:  # rich is optional at runtime
 EXIT_OK = 0
 EXIT_FINDINGS = 1
 EXIT_USAGE = 2
+
+# Evidence file name the live AWS experiment writes, e.g. SG-001-20261016T101322Z.json
+_LIVE_FIXTURE = re.compile(r"-\d{8}T\d{6}Z\.json$")
 
 GATE_ORDER = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 # The rubric has three classes, and high and critical are deliberately merged because the
@@ -247,27 +251,46 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     if not observations:
         _echo("no observations to evaluate")
         return EXIT_USAGE
-    detection = sum(o["detection_match"] == "True" for o in observations)
-    policy = sum(o["policy_match"] == "True" for o in observations)
-    clean = [o for o in observations if o["expected_policy_status"] == "compliant"]
-    # A false alert is a *security* finding on a scenario that should raise none. The tag and
-    # description drift families legitimately produce a non-security finding and stay
-    # compliant, so counting every finding here would conflate "noticed a change" with
-    # "cried wolf", and the figure would look alarming while nothing was wrong.
-    false_alerts = sum(
-        1 for o in clean if o["deterministic_severity"] in ("high_or_critical", "medium")
-    )
-    noticed = sum(int(o["findings_count"]) for o in clean)
+
+    def tally(rows: list[dict]) -> dict:
+        clean = [o for o in rows if o["expected_policy_status"] == "compliant"]
+        detection = sum(o["detection_match"] == "True" for o in rows)
+        policy = sum(o["policy_match"] == "True" for o in rows)
+        return {
+            "runs": len(rows),
+            "templates": len({o["scenario_id"] for o in rows}),
+            "detection_match": f"{detection}/{len(rows)}",
+            "policy_match": f"{policy}/{len(rows)}",
+            "negative_controls": len(clean),
+            # A false alert is a *security* finding on a scenario that should raise none. The
+            # tag and description drift families legitimately produce a non-security finding
+            # and stay compliant, so counting every finding here would conflate "noticed a
+            # change" with "cried wolf".
+            "false_alerts": sum(
+                1 for o in clean if o["deterministic_severity"] in ("high_or_critical", "medium")
+            ),
+            "non_security_findings_on_negative_controls": sum(
+                int(o["findings_count"]) for o in clean
+            ),
+        }
+
+    # Live AWS runs keep the evidence file the experiment wrote, <scenario>-<UTC stamp>.json;
+    # offline runs point at a corpus or fixture path. The report quotes the two sets
+    # separately, so the summary does too instead of pooling them into one denominator.
+    live = [o for o in observations if _LIVE_FIXTURE.search(o["fixture"])]
+    offline = [o for o in observations if not _LIVE_FIXTURE.search(o["fixture"])]
     times = [float(o["processing_time_ms"]) for o in observations]
     coverage = [float(o["assessment_coverage"]) for o in observations]
     summary = {
         "observations": len(observations),
-        "templates": len({o["scenario_id"] for o in observations}),
-        "detection_match": f"{detection}/{len(observations)}",
-        "policy_match": f"{policy}/{len(observations)}",
-        "negative_controls": len(clean),
-        "false_alerts": false_alerts,
-        "non_security_findings_on_negative_controls": noticed,
+        "offline": tally(offline),
+        "live_aws": tally(live),
+        # Every mismatch is printed with the note recorded at the time, never just counted.
+        "mismatches": [
+            {"run_id": o["run_id"], "scenario_id": o["scenario_id"], "note": o["notes"]}
+            for o in observations
+            if o["detection_match"] != "True" or o["policy_match"] != "True"
+        ],
         "processing_ms": {
             "min": round(min(times), 1),
             "median": round(statistics.median(times), 1),

@@ -13,8 +13,8 @@ switches on.
 
 | Model | Macro F1 | Weighted F1 | Accuracy | Recall on high/critical |
 |---|---:|---:|---:|---:|
-| logistic_regression | 0.7016 | 0.7775 | 0.7722 | 0.8225 |
-| random_forest | 0.811 | 0.8711 | 0.8776 | 0.9645 |
+| logistic_regression | 0.7685 | 0.8272 | 0.8228 | 0.8521 |
+| random_forest | 0.8626 | 0.9046 | 0.9072 | 0.9704 |
 
 ## The deterministic baseline is not in that table, on purpose
 
@@ -31,7 +31,7 @@ rules-versus-models claim belongs in the results chapter yet.
 
 | Split | Rule inputs withheld | Rule inputs included |
 |---|---:|---:|
-| grouped by template | 0.7016 | 0.8449 |
+| grouped by template | 0.7685 | 0.8876 |
 | ungrouped (random) | 0.9166 | 1.0 |
 
 Both defences do work. Grouping removes most of the inflation, because control ids are
